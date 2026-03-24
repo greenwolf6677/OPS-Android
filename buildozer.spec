@@ -5,28 +5,43 @@ package.name = ops
 package.domain = org.ops
 version = 1.0.0
 
-requirements = python3,kivy,kivymd
+# المتطلبات
+
+requirements = python3,kivy,kivymd,cython
+
+# إعدادات العرض
 
 orientation = landscape
 fullscreen = 0
 
-android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
+# الصلاحيات
+
+android.permissions = INTERNET
+
+# الأيقونة (تأكد الملف موجود)
 
 icon.filename = assets/icon/logo.png
+
+# اللغة
+
 android.default_language = ar
 
-android.ndk = 25b
-android.sdk = 30
+# إعدادات الأندرويد
+
+android.api = 31
 android.minapi = 21
+
+# ملفات المشروع
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,ttf,db,wav
 source.exclude_exts = spec,pyc,pyo
-source.exclude_patterns = __pycache__,docs
+source.exclude_patterns = **pycache**,docs
+
+# قبول الرخصة تلقائيًا
 
 android.accept_sdk_license = True
-bootstrap = sdl2
 
-# منع بعض المكتبات التي تسبب مشاكل
-android.add_src = 
-android.gradle_dependencies = 
+# نوع التشغيل
+
+bootstrap = sdl2
