@@ -198,4 +198,8 @@ class OPSApp(App):
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     OPSApp().run()
+=======
+    OPSApp().run()
+>>>>>>> dd728929031544e3f9f13691df9f3960576815a7
