@@ -1,0 +1,163 @@
+<DashboardScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        
+        # الإطار العلوي
+        BoxLayout:
+            size_hint_y: 0.12
+            padding: [15, 10]
+            spacing: 10
+            canvas.before:
+                Color:
+                    rgba: (0.2, 0.3, 0.4, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            # اسم المحل والوقت
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.7
+                
+                Label:
+                    text: root.store_name
+                    font_size: 20
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: (1, 1, 1, 1)
+                    halign: 'left'
+                    text_size: self.size
+                
+                Label:
+                    text: f"مرحباً {root.user_name}  |  {root.current_time}"
+                    font_size: 12
+                    font_name: 'ArabicFont'
+                    color: (0.8, 0.8, 0.8, 1)
+                    halign: 'left'
+            
+            # زر تسجيل الخروج
+            Button:
+                text: "تسجيل الخروج"
+                size_hint_x: 0.2
+                font_name: 'ArabicFont'
+                font_size: 14
+                background_color: (0.8, 0.2, 0.2, 1)
+                on_press: root.logout()
+        
+        # إطار الأزرار الرئيسية
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: 15
+                padding: [20, 15]
+                
+                # الصف الأول
+                BoxLayout:
+                    size_hint_y: None
+                    height: 120
+                    spacing: 15
+                    
+                    Button:
+                        text: "🛒 الطلبيات"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.5, 0.8, 1)
+                        on_press: root.open_orders()
+                    
+                    Button:
+                        text: "📦 المنتجات"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        on_press: root.open_products()
+                    
+                    Button:
+                        text: "👥 الزبائن"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.6, 0.3, 0.8, 1)
+                        on_press: root.open_customers()
+                
+                # الصف الثاني
+                BoxLayout:
+                    size_hint_y: None
+                    height: 120
+                    spacing: 15
+                    
+                    Button:
+                        text: "↩️ المرتجع"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.8, 0.4, 0.2, 1)
+                        on_press: root.open_returns()
+                    
+                    Button:
+                        text: "📊 التقارير"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.7, 0.7, 1)
+                        on_press: root.open_reports()
+                    
+                    Button:
+                        text: "🏭 الموردين"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.9, 0.6, 0.1, 1)
+                        on_press: root.open_suppliers()
+                
+                # الصف الثالث
+                BoxLayout:
+                    size_hint_y: None
+                    height: 120
+                    spacing: 15
+                    
+                    Button:
+                        text: "📥 المشتريات"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.8, 1)
+                        on_press: root.open_purchases()
+                    
+                    Button:
+                        text: "⚙️ الإعدادات"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.5, 0.5, 0.5, 1)
+                        on_press: root.open_settings()
+                    
+                    Button:
+                        text: "ℹ️ حول البرنامج"
+                        font_size: 18
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.5, 0.3, 0.7, 1)
+                        on_press: root.open_about()
+        
+        # تذييل
+        BoxLayout:
+            size_hint_y: 0.05
+            padding: 10
+            canvas.before:
+                Color:
+                    rgba: (0.15, 0.2, 0.25, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            
+            Label:
+                text: "OPS - Orders Processing System | جميع الحقوق محفوظة © 2025-2026"
+                text: "0598973359 برمجة وتصميم :الأستاذ محمد موقدي"
+                font_size: 10
+                font_name: 'ArabicFont'
+                color: (0.6, 0.6, 0.6, 1)
+                halign: 'center'

@@ -1,0 +1,580 @@
+<CartItem>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(60)
+    spacing: dp(5)
+    padding: [dp(5), dp(5)]
+    
+    Label:
+        text: root.name
+        size_hint_x: 0.35
+        font_name: 'ArabicFont'
+        halign: 'right'
+        text_size: self.size
+    
+    Label:
+        text: str(root.qty)
+        size_hint_x: 0.1
+        font_name: 'ArabicFont'
+    
+    Label:
+        text: f"{root.price:.2f}"
+        size_hint_x: 0.15
+        font_name: 'ArabicFont'
+    
+    Label:
+        text: f"{root.subtotal:.2f}"
+        size_hint_x: 0.2
+        font_name: 'ArabicFont'
+        color: (0.2, 0.6, 0.2, 1)
+    
+    Button:
+        text: "🗑️"
+        size_hint_x: 0.1
+        font_name: 'ArabicFont'
+        background_color: (0.8, 0.2, 0.2, 1)
+        on_press: app.root.get_screen('orders').remove_from_cart(root.item_id)
+
+
+<ProductCard>:
+    orientation: 'vertical'
+    size_hint: (None, None)
+    width: dp(280)
+    height: dp(380)
+    padding: dp(8)
+    spacing: dp(5)
+    canvas.before:
+        Color:
+            rgba: (1, 1, 1, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        Color:
+            rgba: (0.9, 0.9, 0.9, 1)
+        Line:
+            rectangle: (self.x, self.y, self.width, self.height)
+    
+    BoxLayout:
+        size_hint_y: None
+        height: dp(140)
+        padding: dp(5)
+        canvas.before:
+            Color:
+                rgba: (0.95, 0.95, 0.95, 1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        AsyncImage:
+            source: root.image_path if root.image_path and os.path.exists(root.image_path) else ''
+            placeholder: '🛒'
+            size_hint: (1, 1)
+            mipmap: True
+    
+    Label:
+        text: root.name
+        font_size: sp(14)
+        bold: True
+        font_name: 'ArabicFont'
+        halign: 'center'
+        text_size: self.size
+        size_hint_y: None
+        height: dp(50)
+    
+    Label:
+        text: root.category_name
+        font_size: sp(10)
+        font_name: 'ArabicFont'
+        color: (0.5, 0.5, 0.5, 1)
+        size_hint_y: None
+        height: dp(20)
+    
+    BoxLayout:
+        size_hint_y: None
+        height: dp(30)
+        spacing: dp(5)
+        
+        Label:
+            text: f"{root.price:.2f}"
+            font_size: sp(16)
+            bold: True
+            font_name: 'ArabicFont'
+            color: (0.2, 0.6, 0.2, 1)
+        
+        Label:
+            text: "السعر:"
+            font_size: sp(10)
+            font_name: 'ArabicFont'
+            color: (0.5, 0.5, 0.5, 1)
+    
+    BoxLayout:
+        size_hint_y: None
+        height: dp(30)
+        spacing: dp(5)
+        
+        Label:
+            text: str(root.quantity)
+            font_size: sp(14)
+            bold: True
+            font_name: 'ArabicFont'
+            color: (0.2, 0.8, 0.2, 1) if root.quantity > 10 else (0.8, 0.2, 0.2, 1)
+        
+        Label:
+            text: "متوفر:"
+            font_size: sp(10)
+            font_name: 'ArabicFont'
+            color: (0.5, 0.5, 0.5, 1)
+    
+    BoxLayout:
+        size_hint_y: None
+        height: dp(40)
+        spacing: dp(5)
+        
+        Button:
+            text: "➕"
+            font_size: sp(14)
+            font_name: 'ArabicFont'
+            background_color: (0.2, 0.5, 0.8, 1)
+            on_press: 
+                product = {'barcode': root.barcode, 'name': root.name, 'price': root.price, 'quantity': root.quantity}
+                app.root.get_screen('orders').add_to_cart(product)
+        
+        Button:
+            text: "✏️"
+            font_size: sp(14)
+            font_name: 'ArabicFont'
+            background_color: (0.9, 0.7, 0.1, 1)
+            on_press: 
+                app.root.get_screen('orders').manager.current = 'products'
+        
+        Button:
+            text: "🗑️"
+            font_size: sp(14)
+            font_name: 'ArabicFont'
+            background_color: (0.8, 0.2, 0.2, 1)
+            on_press: 
+                product = {'barcode': root.barcode, 'name': root.name}
+                # حذف المنتج - سيتم تنفيذه في شاشة المنتجات
+
+
+<OrdersScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        # الإطار العلوي
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            
+            Label:
+                text: f"📋 نظام الطلبيات - {app.root.get_screen('orders').settings.get('store_name', 'OPS')}"
+                font_size: sp(20)
+                bold: True
+                font_name: 'ArabicFont'
+            
+            Button:
+                text: "↩️ رجوع"
+                size_hint_x: None
+                width: dp(100)
+                font_name: 'ArabicFont'
+                background_color: (0.5, 0.5, 0.5, 1)
+                on_press: root.go_back()
+            
+            Button:
+                text: "👥 زبائن"
+                size_hint_x: None
+                width: dp(100)
+                font_name: 'ArabicFont'
+                background_color: (0.2, 0.5, 0.8, 1)
+                on_press: root.manager.current = 'customers'
+        
+        # الإطار الرئيسي
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(15)
+            
+            # الجهة اليسرى: معلومات الطلب
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.32
+                spacing: dp(10)
+                padding: dp(10)
+                canvas.before:
+                    Color:
+                        rgba: (1, 1, 1, 1)
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                
+                Label:
+                    text: "معلومات الطلب"
+                    font_size: sp(18)
+                    bold: True
+                    font_name: 'ArabicFont'
+                
+                # اختيار الزبون
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(70)
+                    spacing: dp(5)
+                    orientation: 'vertical'
+                    
+                    Label:
+                        text: "اختر الزبون:"
+                        font_size: sp(12)
+                        font_name: 'ArabicFont'
+                        halign: 'right'
+                        size_hint_y: None
+                        height: dp(25)
+                    
+                    Spinner:
+                        text: root.customer_name
+                        values: root.customers_list
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(40)
+                        on_text: 
+                            root.customer_name = self.text
+                            root.on_customer_change(self.text)
+                
+                # طريقة الدفع
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(70)
+                    spacing: dp(5)
+                    orientation: 'vertical'
+                    
+                    Label:
+                        text: "طريقة الدفع:"
+                        font_size: sp(12)
+                        font_name: 'ArabicFont'
+                        halign: 'right'
+                        size_hint_y: None
+                        height: dp(25)
+                    
+                    Spinner:
+                        text: root.payment_method
+                        values: ["كاش", "فيزا", "دين", "شبكة", "شيكات"]
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(40)
+                        on_text: 
+                            root.payment_method = self.text
+                            root.on_payment_method_change(self.text)
+                
+                # معلومات الشيك (تظهر فقط عند اختيار شيكات)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(200) if root.show_check_fields else dp(0)
+                    spacing: dp(5)
+                    opacity: 1 if root.show_check_fields else 0
+                    disabled: not root.show_check_fields
+                    
+                    Label:
+                        text: "معلومات الشيك"
+                        font_size: sp(14)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.8, 0.2, 0.2, 1)
+                        size_hint_y: None
+                        height: dp(30)
+                    
+                    Label:
+                        text: "اسم صاحب الشيك:"
+                        font_size: sp(10)
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        text: root.check_owner
+                        hint_text: "اسم صاحب الشيك"
+                        font_name: 'ArabicFont'
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(35)
+                        on_text: root.check_owner = self.text
+                    
+                    Label:
+                        text: "اسم البنك:"
+                        font_size: sp(10)
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        text: root.check_bank
+                        hint_text: "اسم البنك"
+                        font_name: 'ArabicFont'
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(35)
+                        on_text: root.check_bank = self.text
+                    
+                    Label:
+                        text: "رقم الشيك:"
+                        font_size: sp(10)
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        text: root.check_number
+                        hint_text: "رقم الشيك"
+                        font_name: 'ArabicFont'
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(35)
+                        on_text: root.check_number = self.text
+                    
+                    Label:
+                        text: "تاريخ الاستحقاق:"
+                        font_size: sp(10)
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(20)
+                    TextInput:
+                        text: root.check_due_date
+                        hint_text: "YYYY-MM-DD"
+                        font_name: 'ArabicFont'
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(35)
+                        on_text: root.check_due_date = self.text
+                
+                # الإحصائيات
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(150)
+                    padding: dp(10)
+                    spacing: dp(5)
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        Label:
+                            text: f"الإجمالي: {root.cart_total:.2f}"
+                            font_size: sp(16)
+                            font_name: 'ArabicFont'
+                            color: (0.2, 0.5, 0.8, 1)
+                    
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        Label:
+                            text: "الخصم:"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        TextInput:
+                            text: str(root.discount)
+                            font_name: 'ArabicFont'
+                            multiline: False
+                            input_filter: 'float'
+                            size_hint_x: 0.5
+                            on_text: 
+                                try:
+                                    root.discount = float(self.text) if self.text else 0
+                                    root.update_cart()
+                                except:
+                                    pass
+                    
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        Label:
+                            text: f"الصافي: {root.net_total:.2f}"
+                            font_size: sp(18)
+                            bold: True
+                            font_name: 'ArabicFont'
+                            color: (0.2, 0.6, 0.2, 1)
+                
+                # أزرار التحكم
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(100)
+                    spacing: dp(5)
+                    
+                    Button:
+                        text: "🔄 طلب جديد"
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.5, 0.8, 1)
+                        size_hint_y: None
+                        height: dp(45)
+                        on_press: root.new_order()
+                    
+                    Button:
+                        text: "✅ تأكيد الطلب"
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        size_hint_y: None
+                        height: dp(45)
+                        on_press: root.confirm_order()
+            
+            # الجهة اليمنى: المنتجات
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.68
+                spacing: dp(10)
+                
+                # إطار البحث والتصفية
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(100)
+                    spacing: dp(10)
+                    padding: dp(10)
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "بحث:"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        TextInput:
+                            text: root.search_text
+                            hint_text: "اسم المنتج أو الباركود"
+                            font_name: 'ArabicFont'
+                            size_hint_y: None
+                            height: dp(40)
+                            on_text: 
+                                root.search_text = self.text
+                                Clock.schedule_once(lambda dt: root.load_products(), 0.5)
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "التصنيف:"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        Spinner:
+                            text: root.selected_category
+                            values: root.categories_list
+                            font_name: 'ArabicFont'
+                            size_hint_y: None
+                            height: dp(40)
+                            on_text: 
+                                root.selected_category = self.text
+                                root.load_products()
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "الكمية الافتراضية:"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        Spinner:
+                            text: str(root.default_qty)
+                            values: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+                            font_name: 'ArabicFont'
+                            size_hint_y: None
+                            height: dp(40)
+                            on_text: 
+                                try:
+                                    root.default_qty = int(self.text)
+                                except:
+                                    pass
+                
+                # سلة المشتريات
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(250)
+                    spacing: dp(5)
+                    
+                    Label:
+                        text: "🛒 سلة المشتريات"
+                        font_size: sp(16)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(30)
+                    
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(40)
+                        spacing: dp(5)
+                        canvas.before:
+                            Color:
+                                rgba: (0.2, 0.3, 0.4, 1)
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+                        
+                        Label:
+                            text: "اسم الصنف"
+                            size_hint_x: 0.35
+                            font_name: 'ArabicFont'
+                            color: (1, 1, 1, 1)
+                        Label:
+                            text: "الكمية"
+                            size_hint_x: 0.1
+                            font_name: 'ArabicFont'
+                            color: (1, 1, 1, 1)
+                        Label:
+                            text: "السعر"
+                            size_hint_x: 0.15
+                            font_name: 'ArabicFont'
+                            color: (1, 1, 1, 1)
+                        Label:
+                            text: "الإجمالي"
+                            size_hint_x: 0.2
+                            font_name: 'ArabicFont'
+                            color: (1, 1, 1, 1)
+                        Label:
+                            text: ""
+                            size_hint_x: 0.1
+                            font_name: 'ArabicFont'
+                            color: (1, 1, 1, 1)
+                    
+                    RecycleView:
+                        id: cart_list
+                        viewclass: 'CartItem'
+                        
+                        RecycleBoxLayout:
+                            default_size: (None, dp(60))
+                            default_size_hint: (1, None)
+                            size_hint_y: None
+                            height: self.minimum_height
+                            orientation: 'vertical'
+                
+                # قائمة المنتجات
+                ScrollView:
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(10)
+                        
+                        Label:
+                            text: "🛍️ المنتجات المتاحة"
+                            font_size: sp(18)
+                            bold: True
+                            font_name: 'ArabicFont'
+                            size_hint_y: None
+                            height: dp(40)
+                        
+                        GridLayout:
+                            cols: 3
+                            spacing: dp(10)
+                            size_hint_y: None
+                            height: self.minimum_height
+                            
+                            for product in root.products_list:
+                                ProductCard:
+                                    barcode: product['barcode']
+                                    name: product['name']
+                                    price: product['price']
+                                    quantity: product['quantity']
+                                    image_path: product['image_path']
+                                    category_name: product['category_name']

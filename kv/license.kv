@@ -1,0 +1,185 @@
+<LicenseScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(15)
+        
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(15)
+                padding: dp(10)
+                
+                # الشعار
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(100)
+                    Label:
+                        text: "OPS"
+                        font_size: sp(48)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.2, 0.6, 0.2, 1)
+                
+                Label:
+                    text: "Orders Processing System"
+                    font_size: sp(18)
+                    font_name: 'ArabicFont'
+                    color: (0.6, 0.6, 0.6, 1)
+                
+                Label:
+                    text: f"الإصدار: {root.app_version}"
+                    font_size: sp(14)
+                    font_name: 'ArabicFont'
+                
+                # حالة الترخيص
+                Label:
+                    text: root.status_text
+                    font_size: sp(16)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: root.status_color
+                    size_hint_y: None
+                    height: dp(50)
+                
+                # رسالة إضافية
+                Label:
+                    text: root.message
+                    font_size: sp(12)
+                    font_name: 'ArabicFont'
+                    color: (0.7, 0.7, 0.7, 1)
+                    size_hint_y: None
+                    height: dp(30)
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                
+                # قسم التفعيل (يظهر فقط إذا لم يكن مفعلاً)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    opacity: 1 if root.status_text != "✅ النسخة مفعلة مدى الحياة" else 0.5
+                    disabled: root.status_text == "✅ النسخة مفعلة مدى الحياة"
+                    
+                    Label:
+                        text: "أدخل كود التفعيل للنسخة الدائمة"
+                        font_size: sp(14)
+                        font_name: 'ArabicFont'
+                        size_hint_y: None
+                        height: dp(30)
+                    
+                    BoxLayout:
+                        size_hint_y: None
+                        height: dp(50)
+                        spacing: dp(5)
+                        
+                        TextInput:
+                            id: activation_input
+                            text: root.activation_code
+                            hint_text: "كود التفعيل"
+                            font_size: sp(16)
+                            font_name: 'ArabicFont'
+                            password: not root.show_code
+                            multiline: False
+                            size_hint_x: 0.85
+                            on_text: root.activation_code = self.text
+                        
+                        Button:
+                            text: "👁" if not root.show_code else "🙈"
+                            size_hint_x: 0.15
+                            font_name: 'ArabicFont'
+                            on_press: root.show_code_toggle()
+                    
+                    Button:
+                        text: "تفعيل الآن"
+                        font_size: sp(16)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        size_hint_y: None
+                        height: dp(50)
+                        on_press: root.activate()
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(20)
+                
+                # Machine ID
+                Label:
+                    text: "Machine ID:"
+                    font_size: sp(12)
+                    font_name: 'ArabicFont'
+                    color: (0.8, 0.8, 0.8, 1)
+                    size_hint_y: None
+                    height: dp(25)
+                
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(45)
+                    spacing: dp(10)
+                    
+                    TextInput:
+                        text: root.machine_id
+                        font_size: sp(11)
+                        font_name: 'ArabicFont'
+                        readonly: True
+                        multiline: False
+                        size_hint_x: 0.8
+                    
+                    Button:
+                        text: "نسخ"
+                        font_size: sp(12)
+                        font_name: 'ArabicFont'
+                        background_color: (0.3, 0.5, 0.8, 1)
+                        size_hint_x: 0.2
+                        on_press: root.copy_machine_id()
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(20)
+                
+                # حقوق البرمجة
+                Label:
+                    text: "برمجة وتصميم: محمد موقدي"
+                    font_size: sp(16)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: (0.4, 0.7, 0.9, 1)
+                    size_hint_y: None
+                    height: dp(30)
+                
+                Label:
+                    text: "0598973359"
+                    font_size: sp(14)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: (1, 0.8, 0.2, 1)
+                    size_hint_y: None
+                    height: dp(25)
+                
+                Label:
+                    text: "جميع الحقوق محفوظة © 2025-2026"
+                    font_size: sp(10)
+                    font_name: 'ArabicFont'
+                    color: (0.5, 0.5, 0.5, 1)
+                    size_hint_y: None
+                    height: dp(20)
+        
+        # زر العودة للخلف (يظهر فقط إذا كان الترخيص صالحاً)
+        Button:
+            text: "الرجوع"
+            font_size: sp(16)
+            font_name: 'ArabicFont'
+            background_color: (0.4, 0.4, 0.4, 1)
+            size_hint_y: None
+            height: dp(50)
+            on_press: root.go_to_dashboard() if root.status_text == "✅ النسخة مفعلة مدى الحياة" else None
+            disabled: root.status_text != "✅ النسخة مفعلة مدى الحياة"
