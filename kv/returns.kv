@@ -1,0 +1,83 @@
+def create_return_receipt(customer_name, items, total_amount, reason):
+    """إنشاء وصل مرتجع PDF"""
+    try:
+        if platform == 'android':
+            pdf_dir = os.path.join(BASE_PATH, 'Documents', 'OPS_Returns')
+        else:
+            pdf_dir = os.path.join(BASE_PATH, 'printouts', 'returns')
+        
+        os.makedirs(pdf_dir, exist_ok=True)
+        
+        filename = f"Return_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        filepath = os.path.join(pdf_dir, filename)
+        
+        pdf = ArabicPDF(orientation='P', unit='mm', format='A6')
+        pdf.add_page()
+        
+        # عنوان الوصل
+        pdf.set_font('Arabic', size=14)
+        pdf.cell(0, 10, 'وصل مرتجع - OPS', ln=True, align='C')
+        
+        pdf.ln(5)
+        pdf.set_font('Arabic', size=10)
+        pdf.cell(0, 8, f"التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align='R')
+        pdf.cell(0, 8, f"الزبون: {customer_name}", ln=True, align='R')
+        
+        pdf.ln(5)
+        pdf.line(10, pdf.get_y(), 150, pdf.get_y())
+        pdf.ln(8)
+        
+        # رؤوس الجدول
+        pdf.set_font('Arabic', size=9)
+        col_widths = [80, 25, 30]
+        pdf.cell(col_widths[0], 8, 'اسم الصنف', border=1, align='C')
+        pdf.cell(col_widths[1], 8, 'الكمية', border=1, align='C')
+        pdf.cell(col_widths[2], 8, 'السعر', border=1, align='C')
+        pdf.ln()
+        
+        # بيانات الجدول
+        for item in items:
+            pdf.cell(col_widths[0], 7, item['name'], border=1, align='R')
+            pdf.cell(col_widths[1], 7, str(item['return_qty']), border=1, align='C')
+            pdf.cell(col_widths[2], 7, f"{item['price']:.2f}", border=1, align='C')
+            pdf.ln()
+        
+        pdf.ln(5)
+        pdf.set_font('Arabic', size=10, style='B')
+        pdf.cell(0, 8, f"الإجمالي المسترد: {total_amount} ₪", ln=True, align='L')
+        
+        if reason:
+            pdf.set_font('Arabic', size=8)
+            pdf.cell(0, 8, f"السبب: {reason}", ln=True, align='R')
+        
+        pdf.ln(5)
+        pdf.set_font('Arabic', size=8)
+        pdf.cell(0, 8, "شكراً لتعاملكم معنا", ln=True, align='C')
+        
+        pdf.output(filepath)
+        
+        # فتح الملف على Android
+        if platform == 'android':
+            from android import mActivity
+            from android.content import Intent
+            from android.net import Uri
+            from jnius import autoclass
+            
+            File = autoclass('java.io.File')
+            Intent = autoclass('android.content.Intent')
+            Uri = autoclass('android.net.Uri')
+            
+            file = File(filepath)
+            uri = Uri.fromFile(file)
+            intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(uri, 'application/pdf')
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            mActivity.startActivity(intent)
+        else:
+            os.startfile(filepath)
+        
+        return filepath
+        
+    except Exception as e:
+        Logger.error(f"OPS PDF: Error creating return receipt - {e}")
+        return None

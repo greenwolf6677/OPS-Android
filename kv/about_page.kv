@@ -1,0 +1,160 @@
+<AboutPageScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+        
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(15)
+                padding: dp(10)
+                
+                # الشعار
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(100)
+                    Label:
+                        text: "OPS"
+                        font_size: sp(48)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.2, 0.6, 0.2, 1)
+                
+                Label:
+                    text: "Orders Processing System"
+                    font_size: sp(18)
+                    color: (0.6, 0.6, 0.6, 1)
+                    font_name: 'ArabicFont'
+                
+                Label:
+                    text: f"الإصدار: 1.0.0"
+                    font_size: sp(14)
+                    font_name: 'ArabicFont'
+                
+                # حالة الترخيص
+                Label:
+                    text: root.status_text
+                    font_size: sp(16)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: root.status_color
+                    size_hint_y: None
+                    height: dp(40)
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                
+                # قسم التفعيل (يظهر فقط إذا لم يكن مفعلاً)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    spacing: dp(10)
+                    opacity: 0 if root.status_text == "النسخة مفعلة مدى الحياة" else 1
+                    disabled: root.status_text == "النسخة مفعلة مدى الحياة"
+                    
+                    Label:
+                        text: "أدخل كود التفعيل للنسخة الدائمة"
+                        font_size: sp(14)
+                        font_name: 'ArabicFont'
+                    
+                    TextInput:
+                        id: activation_input
+                        hint_text: "كود التفعيل"
+                        font_size: sp(16)
+                        font_name: 'ArabicFont'
+                        password: True
+                        multiline: False
+                        size_hint_y: None
+                        height: dp(50)
+                    
+                    Button:
+                        text: "تفعيل الآن"
+                        font_size: sp(16)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        size_hint_y: None
+                        height: dp(50)
+                        on_press: 
+                            success, msg = root.activate_program(activation_input.text)
+                            if success:
+                                root.show_popup("نجاح", msg)
+                                Clock.schedule_once(lambda dt: setattr(root.manager, 'current', 'dashboard'), 2)
+                            else:
+                                root.show_popup("خطأ", msg)
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                
+                # Machine ID
+                Label:
+                    text: "Machine ID:"
+                    font_size: sp(12)
+                    font_name: 'ArabicFont'
+                    color: (0.8, 0.8, 0.8, 1)
+                
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(50)
+                    spacing: dp(10)
+                    
+                    TextInput:
+                        text: root.machine_id
+                        font_size: sp(12)
+                        font_name: 'ArabicFont'
+                        readonly: True
+                        multiline: False
+                        size_hint_x: 0.8
+                    
+                    Button:
+                        text: "نسخ"
+                        font_size: sp(12)
+                        font_name: 'ArabicFont'
+                        background_color: (0.3, 0.5, 0.8, 1)
+                        size_hint_x: 0.2
+                        on_press: root.copy_machine_id()
+                
+                # خط فاصل
+                Widget:
+                    size_hint_y: None
+                    height: dp(20)
+                
+                # حقوق البرمجة
+                Label:
+                    text: "برمجة وتصميم: محمد موقدي"
+                    font_size: sp(16)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: (0.4, 0.7, 0.9, 1)
+                
+                Label:
+                    text: "0598973359"
+                    font_size: sp(14)
+                    bold: True
+                    font_name: 'ArabicFont'
+                    color: (1, 0.8, 0.2, 1)
+                
+                Label:
+                    text: "جميع الحقوق محفوظة © 2025-2026"
+                    font_size: sp(12)
+                    font_name: 'ArabicFont'
+                    color: (0.5, 0.5, 0.5, 1)
+        
+        # زر العودة للخلف
+        Button:
+            text: "العودة للرئيسية"
+            font_size: sp(16)
+            bold: True
+            font_name: 'ArabicFont'
+            background_color: (0.4, 0.4, 0.4, 1)
+            size_hint_y: None
+            height: dp(50)
+            on_press: root.manager.current = 'dashboard'

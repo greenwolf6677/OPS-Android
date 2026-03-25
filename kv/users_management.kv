@@ -1,0 +1,598 @@
+<UserItem>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(50)
+    spacing: dp(5)
+    padding: [dp(5), dp(5)]
+    
+    Label:
+        text: str(root.user_id)
+        size_hint_x: 0.1
+        font_name: 'ArabicFont'
+    
+    Label:
+        text: root.username
+        size_hint_x: 0.25
+        font_name: 'ArabicFont'
+        halign: 'right'
+        text_size: self.size
+    
+    Label:
+        text: root.full_name
+        size_hint_x: 0.35
+        font_name: 'ArabicFont'
+        halign: 'right'
+        text_size: self.size
+    
+    Label:
+        text: "مدير" if root.role == 'admin' else "موظف"
+        size_hint_x: 0.2
+        font_name: 'ArabicFont'
+        color: (0.2, 0.6, 0.2, 1) if root.role == 'admin' else (0.8, 0.5, 0.2, 1)
+    
+    Button:
+        text: "تحديد"
+        size_hint_x: 0.1
+        font_name: 'ArabicFont'
+        background_color: (0.3, 0.5, 0.8, 1)
+        on_press: 
+            app.root.get_screen('users_management').select_user(
+                root.user_id, root.username, root.full_name, root.role
+            )
+
+
+<UsersManagementScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        # الإطار العلوي
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            
+            Label:
+                text: "⚙️ إدارة الصلاحيات والإعدادات"
+                font_size: sp(24)
+                bold: True
+                font_name: 'ArabicFont'
+            
+            Button:
+                text: "↩️ رجوع"
+                size_hint_x: None
+                width: dp(100)
+                font_name: 'ArabicFont'
+                background_color: (0.5, 0.5, 0.5, 1)
+                on_press: root.go_back()
+        
+        # تبويبات
+        TabbedPanel:
+            size_hint_y: 0.95
+            
+            # ======== تبويب إعدادات المحل ========
+            TabbedPanelItem:
+                text: "⚙️ إعدادات المحل"
+                
+                ScrollView:
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+                        spacing: dp(15)
+                        padding: dp(20)
+                        
+                        # إطار الشعار
+                        BoxLayout:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: dp(320)
+                            spacing: dp(10)
+                            padding: dp(15)
+                            canvas.before:
+                                Color:
+                                    rgba: (0.1, 0.2, 0.3, 1)
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [15]
+                            
+                            Label:
+                                text: "شعار المحل"
+                                font_size: sp(20)
+                                bold: True
+                                font_name: 'ArabicFont'
+                                color: (0.4, 0.7, 0.9, 1)
+                                size_hint_y: None
+                                height: dp(40)
+                            
+                            BoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(200)
+                                spacing: dp(15)
+                                
+                                # عرض الشعار
+                                BoxLayout:
+                                    size_hint_x: 0.5
+                                    canvas.before:
+                                        Color:
+                                            rgba: (0.2, 0.3, 0.4, 1)
+                                        RoundedRectangle:
+                                            pos: self.pos
+                                            size: self.size
+                                            radius: [10]
+                                    
+                                    AsyncImage:
+                                        id: logo_image
+                                        source: root.logo_path if root.logo_path else ''
+                                        size_hint: (1, 1)
+                                        mipmap: True
+                                    
+                                    Label:
+                                        id: logo_label
+                                        text: "لا يوجد شعار" if not root.logo_path else ""
+                                        font_name: 'ArabicFont'
+                                        color: (0.8, 0.8, 0.8, 1)
+                                        size_hint: (1, 1)
+                                
+                                # معلومات الشعار
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    size_hint_x: 0.5
+                                    spacing: dp(10)
+                                    
+                                    Label:
+                                        text: ":مسار الشعار"
+                                        font_size: sp(14)
+                                        font_name: 'ArabicFont'
+                                        size_hint_y: None
+                                        height: dp(25)
+                                    
+                                    TextInput:
+                                        text: root.logo_path
+                                        font_name: 'ArabicFont'
+                                        readonly: True
+                                        size_hint_y: None
+                                        height: dp(45)
+                                    
+                                    BoxLayout:
+                                        size_hint_y: None
+                                        height: dp(45)
+                                        spacing: dp(10)
+                                        
+                                        Button:
+                                            text: "اختيار شعار"
+                                            font_name: 'ArabicFont'
+                                            background_color: (0.2, 0.5, 0.8, 1)
+                                            on_press: root.select_logo()
+                                        
+                                        Button:
+                                            text: "إزالة"
+                                            font_name: 'ArabicFont'
+                                            background_color: (0.8, 0.2, 0.2, 1)
+                                            on_press: root.clear_logo()
+                            
+                            Label:
+                                text: "يُفضل استخدام صورة بحجم 150×150 بكسل"
+                                font_size: sp(10)
+                                font_name: 'ArabicFont'
+                                color: (0.6, 0.6, 0.6, 1)
+                                size_hint_y: None
+                                height: dp(25)
+                        
+                        # إطار معلومات المحل
+                        BoxLayout:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: dp(380)
+                            spacing: dp(10)
+                            padding: dp(15)
+                            canvas.before:
+                                Color:
+                                    rgba: (0.1, 0.2, 0.3, 1)
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [15]
+                            
+                            Label:
+                                text: "معلومات المحل"
+                                font_size: sp(20)
+                                bold: True
+                                font_name: 'ArabicFont'
+                                color: (0.4, 0.7, 0.9, 1)
+                                size_hint_y: None
+                                height: dp(40)
+                            
+                            Label:
+                                text: ":اسم المحل التجاري"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            TextInput:
+                                text: root.store_name
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.store_name = self.text
+                            
+                            Label:
+                                text: ":رقم الهاتف"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            TextInput:
+                                text: root.store_phone
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.store_phone = self.text
+                            
+                            Label:
+                                text: ":العنوان"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            TextInput:
+                                text: root.store_address
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.store_address = self.text
+                            
+                            Label:
+                                text: ":الرقم الضريبي"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            TextInput:
+                                text: root.tax_number
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.tax_number = self.text
+                        
+                        # إطار إعدادات الفواتير
+                        BoxLayout:
+                            orientation: 'vertical'
+                            size_hint_y: None
+                            height: dp(200)
+                            spacing: dp(10)
+                            padding: dp(15)
+                            canvas.before:
+                                Color:
+                                    rgba: (0.1, 0.2, 0.3, 1)
+                                RoundedRectangle:
+                                    pos: self.pos
+                                    size: self.size
+                                    radius: [15]
+                            
+                            Label:
+                                text: "إعدادات الفواتير"
+                                font_size: sp(20)
+                                bold: True
+                                font_name: 'ArabicFont'
+                                color: (0.4, 0.7, 0.9, 1)
+                                size_hint_y: None
+                                height: dp(40)
+                            
+                            Label:
+                                text: ":تذييل الفاتورة"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            TextInput:
+                                text: root.receipt_footer
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.receipt_footer = self.text
+                            
+                            Label:
+                                text: ":رمز العملة"
+                                font_size: sp(14)
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(25)
+                            Spinner:
+                                text: root.currency
+                                values: ["₪", "$", "€", "JD", "EGP"]
+                                font_name: 'ArabicFont'
+                                size_hint_y: None
+                                height: dp(45)
+                                on_text: root.currency = self.text
+                        
+                        # زر حفظ الإعدادات
+                        Button:
+                            text: "💾 حفظ إعدادات المحل"
+                            font_name: 'ArabicFont'
+                            background_color: (0.2, 0.6, 0.2, 1)
+                            size_hint_y: None
+                            height: dp(60)
+                            on_press: root.save_store_settings()
+                        
+                        Label:
+                            text: "اضغط لحفظ جميع التغييرات في اسم المحل والشعار وإعدادات الفواتير"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                            color: (0.6, 0.6, 0.6, 1)
+                            size_hint_y: None
+                            height: dp(30)
+            
+            # ======== تبويب التحديثات والصيانة ========
+            TabbedPanelItem:
+                text: "📦 التحديثات والصيانة"
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    padding: dp(20)
+                    spacing: dp(20)
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(300)
+                        spacing: dp(15)
+                        padding: dp(20)
+                        canvas.before:
+                            Color:
+                                rgba: (0.1, 0.2, 0.3, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [15]
+                        
+                        Label:
+                            text: "📦 مركز التحديثات والصيانة"
+                            font_size: sp(22)
+                            bold: True
+                            font_name: 'ArabicFont'
+                            color: (0.4, 0.7, 0.9, 1)
+                            size_hint_y: None
+                            height: dp(50)
+                        
+                        Button:
+                            text: "📥 تحديث البرنامج الآن"
+                            font_name: 'ArabicFont'
+                            background_color: (0.2, 0.7, 0.3, 1)
+                            size_hint_y: None
+                            height: dp(60)
+                            on_press: root.manual_update()
+                        
+                        Button:
+                            text: "💾 إنشاء نسخة احتياطية"
+                            font_name: 'ArabicFont'
+                            background_color: (0.2, 0.5, 0.8, 1)
+                            size_hint_y: None
+                            height: dp(60)
+                            on_press: root.create_backup()
+                        
+                        Button:
+                            text: "♻ استرجاع نسخة احتياطية"
+                            font_name: 'ArabicFont'
+                            background_color: (0.8, 0.6, 0.2, 1)
+                            size_hint_y: None
+                            height: dp(60)
+                            on_press: root.restore_backup()
+            
+            # ======== تبويب إدارة المستخدمين ========
+            TabbedPanelItem:
+                text: "👥 إدارة المستخدمين"
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    spacing: dp(10)
+                    padding: dp(10)
+                    
+                    # إطار إدخال بيانات المستخدم
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(320)
+                        spacing: dp(10)
+                        padding: dp(15)
+                        canvas.before:
+                            Color:
+                                rgba: (0.1, 0.2, 0.3, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [15]
+                        
+                        GridLayout:
+                            cols: 2
+                            spacing: dp(10)
+                            size_hint_y: None
+                            height: dp(240)
+                            
+                            Label:
+                                text: ":الاسم الكامل"
+                                font_name: 'ArabicFont'
+                            TextInput:
+                                text: root.full_name
+                                font_name: 'ArabicFont'
+                                multiline: False
+                                on_text: root.full_name = self.text
+                            
+                            Label:
+                                text: ":اسم المستخدم"
+                                font_name: 'ArabicFont'
+                            TextInput:
+                                text: root.username
+                                font_name: 'ArabicFont'
+                                multiline: False
+                                on_text: root.username = self.text
+                            
+                            Label:
+                                text: ":كلمة المرور"
+                                font_name: 'ArabicFont'
+                            TextInput:
+                                text: root.password
+                                hint_text: "اتركها فارغة لتجنب التغيير"
+                                font_name: 'ArabicFont'
+                                password: True
+                                multiline: False
+                                on_text: root.password = self.text
+                            
+                            Label:
+                                text: ":نوع الحساب"
+                                font_name: 'ArabicFont'
+                            BoxLayout:
+                                CheckBox:
+                                    active: root.is_admin
+                                    on_active: root.is_admin = self.active
+                                Label:
+                                    text: "مدير"
+                                    font_name: 'ArabicFont'
+                                CheckBox:
+                                    active: not root.is_admin
+                                    on_active: root.is_admin = not self.active
+                                Label:
+                                    text: "موظف"
+                                    font_name: 'ArabicFont'
+                        
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(50)
+                            spacing: dp(10)
+                            
+                            Button:
+                                text: "➕ إضافة مستخدم"
+                                font_name: 'ArabicFont'
+                                background_color: (0.2, 0.6, 0.2, 1)
+                                on_press: root.add_user()
+                            
+                            Button:
+                                text: "✏️ حفظ التعديلات"
+                                font_name: 'ArabicFont'
+                                background_color: (0.9, 0.7, 0.1, 1)
+                                on_press: root.update_user()
+                            
+                            Button:
+                                text: "🗑️ حذف الحساب"
+                                font_name: 'ArabicFont'
+                                background_color: (0.8, 0.2, 0.2, 1)
+                                on_press: root.delete_user()
+                            
+                            Button:
+                                text: "🧹 مسح"
+                                font_name: 'ArabicFont'
+                                background_color: (0.5, 0.5, 0.5, 1)
+                                on_press: root.clear_user_fields()
+                    
+                    # إطار مربعات الصلاحيات
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(100)
+                        spacing: dp(10)
+                        padding: dp(15)
+                        canvas.before:
+                            Color:
+                                rgba: (0.2, 0.3, 0.4, 1)
+                            RoundedRectangle:
+                                pos: self.pos
+                                size: self.size
+                                radius: [15]
+                        
+                        Label:
+                            text: ":صلاحيات الوصول"
+                            font_name: 'ArabicFont'
+                            size_hint_y: None
+                            height: dp(30)
+                        
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(50)
+                            spacing: dp(20)
+                            
+                            CheckBox:
+                                active: root.sales_perm
+                                disabled: True
+                            Label:
+                                text: "المبيعات"
+                                font_name: 'ArabicFont'
+                            
+                            CheckBox:
+                                active: root.reports_perm
+                                disabled: True
+                            Label:
+                                text: "التقارير"
+                                font_name: 'ArabicFont'
+                            
+                            CheckBox:
+                                active: root.stock_perm
+                                disabled: True
+                            Label:
+                                text: "المخزن"
+                                font_name: 'ArabicFont'
+                            
+                            CheckBox:
+                                active: root.is_admin
+                                disabled: True
+                            Label:
+                                text: "الإدارة (Admin)"
+                                font_name: 'ArabicFont'
+                    
+                    # جدول المستخدمين
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: dp(50)
+                        spacing: dp(5)
+                        
+                        BoxLayout:
+                            size_hint_y: None
+                            height: dp(40)
+                            spacing: dp(5)
+                            padding: dp(5)
+                            canvas.before:
+                                Color:
+                                    rgba: (0.2, 0.3, 0.4, 1)
+                                Rectangle:
+                                    pos: self.pos
+                                    size: self.size
+                            
+                            Label:
+                                text: "ID"
+                                size_hint_x: 0.1
+                                font_name: 'ArabicFont'
+                                color: (1, 1, 1, 1)
+                            Label:
+                                text: "اسم المستخدم"
+                                size_hint_x: 0.25
+                                font_name: 'ArabicFont'
+                                color: (1, 1, 1, 1)
+                            Label:
+                                text: "الاسم الكامل"
+                                size_hint_x: 0.35
+                                font_name: 'ArabicFont'
+                                color: (1, 1, 1, 1)
+                            Label:
+                                text: "نوع الحساب"
+                                size_hint_x: 0.2
+                                font_name: 'ArabicFont'
+                                color: (1, 1, 1, 1)
+                            Label:
+                                text: ""
+                                size_hint_x: 0.1
+                                font_name: 'ArabicFont'
+                                color: (1, 1, 1, 1)
+                        
+                        RecycleView:
+                            id: users_list
+                            viewclass: 'UserItem'
+                            
+                            RecycleBoxLayout:
+                                default_size: (None, dp(50))
+                                default_size_hint: (1, None)
+                                size_hint_y: None
+                                height: self.minimum_height
+                                orientation: 'vertical'

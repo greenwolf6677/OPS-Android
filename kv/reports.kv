@@ -1,0 +1,410 @@
+<ReportItem>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(45)
+    spacing: dp(5)
+    padding: [dp(5), dp(5)]
+    
+    Label:
+        text: root.barcode
+        size_hint_x: 0.12
+        font_name: 'ArabicFont'
+        font_size: sp(11)
+    
+    Label:
+        text: root.name
+        size_hint_x: 0.3
+        font_name: 'ArabicFont'
+        font_size: sp(11)
+        halign: 'right'
+        text_size: self.size
+    
+    Label:
+        text: str(root.qty)
+        size_hint_x: 0.08
+        font_name: 'ArabicFont'
+        font_size: sp(11)
+    
+    Label:
+        text: f"{root.total:.2f}"
+        size_hint_x: 0.12
+        font_name: 'ArabicFont'
+        font_size: sp(11)
+        color: (0.2, 0.6, 0.2, 1)
+    
+    Label:
+        text: root.date
+        size_hint_x: 0.18
+        font_name: 'ArabicFont'
+        font_size: sp(11)
+
+
+<ReportsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        # الإطار العلوي
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            
+            Label:
+                text: "التقارير"
+                font_size: sp(24)
+                bold: True
+                font_name: 'ArabicFont'
+            
+            Button:
+                text: "↩️ رجوع"
+                size_hint_x: None
+                width: dp(100)
+                font_name: 'ArabicFont'
+                background_color: (0.5, 0.5, 0.5, 1)
+                on_press: root.go_back()
+        
+        # قائمة التقارير المتاحة
+        ScrollView:
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: dp(15)
+                padding: dp(20)
+                
+                # التقارير الأساسية
+                Button:
+                    text: "📊 تقرير المبيعات المتقدم"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.2, 0.5, 0.8, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'daily_sales_report'
+                
+                Button:
+                    text: "🏆 الأصناف الأكثر مبيعاً"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.2, 0.6, 0.2, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'top_products_report'
+                
+                Button:
+                    text: "📉 الأصناف الأقل مبيعاً"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.8, 0.4, 0.2, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'bottom_products_report'
+                
+                Button:
+                    text: "💰 تقرير أرباح المنتجات"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.8, 0.5, 0.1, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'profit_report'
+                
+                Button:
+                    text: "👥 تقرير الديون"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.5, 0.3, 0.7, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'debt_report'
+                
+                Button:
+                    text: "👤 المبيعات حسب المستخدم"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.8, 0.3, 0.5, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'sales_by_user_report'
+                
+                Button:
+                    text: "💳 المبيعات حسب طريقة الدفع"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.3, 0.6, 0.5, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'payment_method_report'
+                
+                Button:
+                    text: "📥 تقرير المشتريات"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.2, 0.7, 0.7, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'purchases_report'
+                
+                Button:
+                    text: "📦 تقرير حركة المخزون"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.7, 0.5, 0.2, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'inventory_report'
+                
+                Button:
+                    text: "⚙️ الإدارة"
+                    font_name: 'ArabicFont'
+                    font_size: sp(18)
+                    background_color: (0.5, 0.3, 0.7, 1)
+                    size_hint_y: None
+                    height: dp(70)
+                    on_press: root.manager.current = 'users_management'
+
+
+<DailySalesReportScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+        
+        # الإطار العلوي
+        BoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: dp(10)
+            
+            Label:
+                text: "تقرير المبيعات المتقدم"
+                font_size: sp(22)
+                bold: True
+                font_name: 'ArabicFont'
+            
+            Button:
+                text: "↩️ رجوع"
+                size_hint_x: None
+                width: dp(100)
+                font_name: 'ArabicFont'
+                background_color: (0.5, 0.5, 0.5, 1)
+                on_press: root.go_back()
+        
+        # الإطار الرئيسي
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(15)
+            
+            # الجهة اليسرى: الإحصائيات
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.3
+                spacing: dp(10)
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(100)
+                    padding: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: "إجمالي المبيعات"
+                        font_size: sp(14)
+                        font_name: 'ArabicFont'
+                    Label:
+                        text: root.total_sales
+                        font_size: sp(28)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.2, 0.5, 0.8, 1)
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(100)
+                    padding: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: "عدد الأصناف المباعة"
+                        font_size: sp(14)
+                        font_name: 'ArabicFont'
+                    Label:
+                        text: root.total_items
+                        font_size: sp(28)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.8, 0.2, 0.2, 1)
+                
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(100)
+                    padding: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: (0.95, 0.95, 0.95, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: "صافي المبيعات"
+                        font_size: sp(14)
+                        font_name: 'ArabicFont'
+                    Label:
+                        text: root.net_sales
+                        font_size: sp(28)
+                        bold: True
+                        font_name: 'ArabicFont'
+                        color: (0.2, 0.6, 0.2, 1)
+            
+            # الجهة اليمنى: المحتوى
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.7
+                spacing: dp(10)
+                
+                # إطار الفلترة
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(100)
+                    spacing: dp(10)
+                    padding: dp(10)
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "من تاريخ"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        Button:
+                            text: root.start_date
+                            font_name: 'ArabicFont'
+                            background_color: (0.3, 0.3, 0.3, 1)
+                            size_hint_y: None
+                            height: dp(40)
+                            on_press: root.open_start_date_picker()
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "إلى تاريخ"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        Button:
+                            text: root.end_date
+                            font_name: 'ArabicFont'
+                            background_color: (0.3, 0.3, 0.3, 1)
+                            size_hint_y: None
+                            height: dp(40)
+                            on_press: root.open_end_date_picker()
+                    
+                    BoxLayout:
+                        orientation: 'vertical'
+                        spacing: dp(5)
+                        Label:
+                            text: "الرصيد الافتتاحي"
+                            font_size: sp(12)
+                            font_name: 'ArabicFont'
+                        TextInput:
+                            text: root.opening_balance
+                            font_name: 'ArabicFont'
+                            multiline: False
+                            input_filter: 'float'
+                            size_hint_y: None
+                            height: dp(40)
+                            on_text: root.opening_balance = self.text
+                    
+                    Button:
+                        text: "عرض التقرير 🔍"
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        size_hint_x: None
+                        width: dp(120)
+                        on_press: root.load_report()
+                
+                # رأس الجدول
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(40)
+                    spacing: dp(5)
+                    padding: dp(5)
+                    canvas.before:
+                        Color:
+                            rgba: (0.2, 0.3, 0.4, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+                    
+                    Label:
+                        text: "الباركود"
+                        size_hint_x: 0.12
+                        font_name: 'ArabicFont'
+                        color: (1, 1, 1, 1)
+                    Label:
+                        text: "اسم المنتج"
+                        size_hint_x: 0.3
+                        font_name: 'ArabicFont'
+                        color: (1, 1, 1, 1)
+                    Label:
+                        text: "الكمية"
+                        size_hint_x: 0.08
+                        font_name: 'ArabicFont'
+                        color: (1, 1, 1, 1)
+                    Label:
+                        text: "الإجمالي"
+                        size_hint_x: 0.12
+                        font_name: 'ArabicFont'
+                        color: (1, 1, 1, 1)
+                    Label:
+                        text: "التاريخ"
+                        size_hint_x: 0.18
+                        font_name: 'ArabicFont'
+                        color: (1, 1, 1, 1)
+                
+                # قائمة المبيعات
+                RecycleView:
+                    id: report_list
+                    viewclass: 'ReportItem'
+                    
+                    RecycleBoxLayout:
+                        default_size: (None, dp(45))
+                        default_size_hint: (1, None)
+                        size_hint_y: None
+                        height: self.minimum_height
+                        orientation: 'vertical'
+                
+                # أزرار التحكم
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(60)
+                    spacing: dp(10)
+                    padding: dp(10)
+                    
+                    Button:
+                        text: "🖨️ طباعة التقرير PDF"
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.5, 0.7, 1)
+                        on_press: root.print_report()
+                    
+                    Button:
+                        text: "❌ إغلاق"
+                        font_name: 'ArabicFont'
+                        background_color: (0.6, 0.2, 0.2, 1)
+                        on_press: root.go_back()
