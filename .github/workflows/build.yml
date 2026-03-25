@@ -1,0 +1,34 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-pip git openjdk-17-jdk zip unzip autoconf libtool
+        pip install buildozer cython pillow
+    
+    - name: Create icon
+      run: |
+        mkdir -p assets/icon
+        python3 -c "from PIL import Image; Image.new('RGB', (512, 512), color='#2ecc71').save('assets/icon/logo.png')"
+    
+    - name: Build APK
+      run: buildozer android debug
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: OPS-APK
+        path: bin/*.apk
