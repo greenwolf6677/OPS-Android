@@ -1,284 +1,155 @@
-"""
-OPS Android Security Module
-وحدة الحماية والترخيص لنظام Android
-"""
-
 import os
-import sys
 import hashlib
 import uuid
 import socket
 import datetime
-import json
-import sqlite3
 from kivy.utils import platform
 from kivy.logger import Logger
+from kivy.app import App
 
-# تحديد مسار الترخيص
+# تحديد مسار الترخيص - تم التعديل ليكون داخل مجلد بيانات التطبيق الآمن
 if platform == 'android':
-    from android.storage import primary_external_storage_path
     from android.permissions import request_permissions, Permission
-    
-    BASE_PATH = primary_external_storage_path()
-    LICENSE_FOLDER = os.path.join(BASE_PATH, 'ops_license')
-    
-    # طلب الأذونات
-    try:
-        request_permissions([
-            Permission.READ_EXTERNAL_STORAGE,
-            Permission.WRITE_EXTERNAL_STORAGE
-        ])
-    except:
-        pass
+    # استخدام مجلد بيانات التطبيق الخاص لضمان الاستقرار في أندرويد 11+
+    BASE_PATH = App.get_running_app().user_data_dir
+    LICENSE_FOLDER = os.path.join(BASE_PATH, 'security_ops')
 else:
     BASE_PATH = os.path.expanduser("~")
     LICENSE_FOLDER = os.path.join(BASE_PATH, '.ops_license')
 
 LICENSE_FILE = os.path.join(LICENSE_FOLDER, 'license.dat')
-BACKUP_FILE = os.path.join(LICENSE_FOLDER, 'license.bak')
-LAST_RUN_FILE = os.path.join(LICENSE_FOLDER, 'last_run.dat')
+LAST_RUN_FILE = os.path.join(LICENSE_FOLDER, 'timestamp.dat')
 
-# إعدادات البرنامج
-APP_VERSION = "V 1.0.0"
+# إعدادات
 TRIAL_DAYS = 14
 ACTIVATION_SECRET = "OPS-2026-ANDROID-SECRET-777"
-
-# مفتاح التشفير الثابت
 FERNET_KEY = b'YJ-k0lYk6dA7Cw4nX3hYJ7ZQdQkX3pxVp_nJ8QvI2XY='
 
-# إنشاء مجلد الترخيص
 os.makedirs(LICENSE_FOLDER, exist_ok=True)
 
-
-# ==================== تشفير وفك ====================
+# محاولة تحميل التشفير
 try:
     from cryptography.fernet import Fernet
-    fernet = Fernet(FERNET_KEY)
-    ENCRYPTION_AVAILABLE = True
-    Logger.info("OPS Security: Encryption module loaded")
+    cipher_suite = Fernet(FERNET_KEY)
+    ENCRYPTION_ENABLED = True
 except ImportError:
-    ENCRYPTION_AVAILABLE = False
-    Logger.warning("OPS Security: Cryptography not available")
-
+    ENCRYPTION_ENABLED = False
+    Logger.warning("OPS Security: Cryptography not installed, using base64 fallback")
 
 def encrypt_data(data: str) -> bytes:
-    """تشفير البيانات"""
-    if not ENCRYPTION_AVAILABLE:
-        return data.encode()
-    try:
-        return fernet.encrypt(data.encode())
-    except Exception as e:
-        Logger.error(f"OPS Security: Encryption error - {e}")
-        return data.encode()
-
+    if ENCRYPTION_ENABLED:
+        return cipher_suite.encrypt(data.encode())
+    import base64
+    return base64.b64encode(data.encode())
 
 def decrypt_data(data: bytes) -> str:
-    """فك تشفير البيانات"""
-    if not ENCRYPTION_AVAILABLE:
-        return data.decode()
     try:
-        return fernet.decrypt(data).decode()
-    except Exception as e:
-        Logger.error(f"OPS Security: Decryption error - {e}")
+        if ENCRYPTION_ENABLED:
+            return cipher_suite.decrypt(data).decode()
+        import base64
+        return base64.b64decode(data).decode()
+    except:
         return ""
 
-
-# ==================== Machine ID (محسن للأندرويد) ====================
 def get_machine_id():
-    """الحصول على معرف فريد للجهاز"""
-    try:
-        if platform == 'android':
-            # على Android، نستخدم Android ID
-            try:
-                from jnius import autoclass
-                from android import mActivity
-                
-                Settings = autoclass('android.provider.Settings')
-                Secure = autoclass('android.provider.Settings$Secure')
-                android_id = Secure.getString(mActivity.getContentResolver(), 
-                                              Settings.Secure.ANDROID_ID)
-                
-                if android_id:
-                    machine_id = hashlib.sha256(android_id.encode()).hexdigest()[:16]
-                else:
-                    # البديل: استخدام UUID
-                    machine_id = hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()[:16]
-            except:
-                machine_id = hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()[:16]
-        else:
-            # على Windows/Linux
-            cpu = hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
-            hostname = hashlib.sha256(socket.gethostname().encode()).hexdigest()
-            machine_id = hashlib.sha256((cpu + hostname).encode()).hexdigest()[:16]
-        
-        Logger.info(f"OPS Security: Machine ID generated")
-        return machine_id
-        
-    except Exception as e:
-        Logger.error(f"OPS Security: Error getting machine ID - {e}")
-        return "DEFAULT-MACHINE"
+    """جلب معرف فريد للجهاز (Android ID)"""
+    if platform == 'android':
+        try:
+            from jnius import autoclass
+            from android import mActivity
+            Context = autoclass('android.content.Context')
+            Settings = autoclass('android.provider.Settings$Secure')
+            android_id = Settings.getString(mActivity.getContentResolver(), Settings.ANDROID_ID)
+            if android_id:
+                return hashlib.sha256(android_id.encode()).hexdigest()[:16].upper()
+        except Exception as e:
+            Logger.error(f"OPS Security: Jnius failed - {e}")
+    
+    # Fallback للمحاكي أو سطح المكتب
+    fallback_id = str(uuid.getnode())
+    return hashlib.sha256(fallback_id.encode()).hexdigest()[:16].upper()
 
-
-# ==================== حماية التاريخ ====================
 def get_real_date():
-    """الحصول على التاريخ الحقيقي"""
-    try:
-        # محاولة الحصول على التاريخ من الإنترنت
-        import requests
-        response = requests.get("https://worldtimeapi.org/api/ip", timeout=5)
-        data = response.json()
-        return datetime.datetime.strptime(data["utc_datetime"][:10], "%Y-%m-%d").date()
-    except:
-        # إذا فشل، نستخدم التاريخ المحلي
-        return datetime.date.today()
-
-
-def check_date_tamper():
-    """التحقق من عدم التلاعب بالتاريخ"""
-    try:
-        today = get_real_date()
-        
-        if not os.path.exists(LAST_RUN_FILE):
-            with open(LAST_RUN_FILE, "w") as f:
-                f.write(str(today))
-            return True
-        
-        with open(LAST_RUN_FILE, "r") as f:
-            last_date = datetime.datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
-        
-        # إذا كان التاريخ الحالي أقل من آخر تشغيل، فهناك تلاعب
-        if today < last_date:
-            Logger.warning("OPS Security: Date tampering detected!")
-            return False
-        
-        # تحديث آخر تشغيل
-        with open(LAST_RUN_FILE, "w") as f:
-            f.write(str(today))
-        return True
-        
-    except Exception as e:
-        Logger.error(f"OPS Security: Error checking date - {e}")
-        return True
-
-
-# ==================== نظام الترخيص ====================
-def save_license(status="TRIAL"):
-    """حفظ حالة الترخيص"""
-    try:
-        machine_id = get_machine_id()
-        today = str(get_real_date())
-        content = f"{today}\n{machine_id}\n{status}"
-        data_enc = encrypt_data(content)
-        
-        with open(LICENSE_FILE, "wb") as f:
-            f.write(data_enc)
-        with open(BACKUP_FILE, "wb") as f:
-            f.write(data_enc)
-        
-        Logger.info(f"OPS Security: License saved with status: {status}")
-        return True
-    except Exception as e:
-        Logger.error(f"OPS Security: Error saving license - {e}")
-        return False
-
+    """جلب التاريخ من الإنترنت لتعطيل التلاعب"""
+    import requests
+    urls = ["https://worldtimeapi.org/api/ip", "https://date.nager.at/api/v2/publicholidays/2026/US"]
+    for url in urls:
+        try:
+            response = requests.get(url, timeout=3)
+            if response.status_code == 200:
+                # محاولة استخراج التاريخ من header الاستجابة (أضمن وأسرع)
+                date_str = response.headers.get('Date')
+                return datetime.datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %Z').date()
+        except:
+            continue
+    return datetime.date.today()
 
 def check_license():
-    """التحقق من حالة الترخيص"""
-    # التحقق من التاريخ أولاً
-    if not check_date_tamper():
-        return "invalid", 0, "تم اكتشاف تلاعب بالتاريخ!"
-    
     machine_id = get_machine_id()
-    
+    today = get_real_date()
+
+    # فحص التلاعب بالتاريخ
+    if os.path.exists(LAST_RUN_FILE):
+        with open(LAST_RUN_FILE, 'r') as f:
+            try:
+                last_date = datetime.datetime.strptime(f.read(), '%Y-%m-%d').date()
+                if today < last_date:
+                    return "invalid", 0, "تم اكتشاف تلاعب في تاريخ الجهاز!"
+            except: pass
+
+    with open(LAST_RUN_FILE, 'w') as f: f.write(str(today))
+
     if not os.path.exists(LICENSE_FILE):
-        save_license("TRIAL")
-        return "trial", TRIAL_DAYS, f"نسخة تجريبية - {TRIAL_DAYS} يوم"
-    
+        return "trial_new", TRIAL_DAYS, "نسخة تجريبية جديدة"
+
     try:
-        with open(LICENSE_FILE, "rb") as f:
-            data = f.read()
-            if not data:
-                save_license("TRIAL")
-                return "trial", TRIAL_DAYS, f"نسخة تجريبية - {TRIAL_DAYS} يوم"
+        with open(LICENSE_FILE, 'rb') as f:
+            raw_data = f.read()
+            decrypted = decrypt_data(raw_data)
+            parts = decrypted.split('|')
             
-            lines = decrypt_data(data).splitlines()
-        
-        if len(lines) < 3:
-            return "invalid", 0, "ملف الترخيص تالف"
-        
-        if lines[1] != machine_id:
-            return "invalid", 0, "هذا الجهاز غير مرخص"
-        
-        if lines[2] == "ACTIVATED":
-            return "activated", -1, "النسخة مفعلة مدى الحياة"
-        
-        start_date = datetime.datetime.strptime(lines[0], "%Y-%m-%d").date()
-        today = get_real_date()
-        days_used = (today - start_date).days
-        days_left = TRIAL_DAYS - days_used
-        
-        if days_left > 0:
-            return "trial", days_left, f"نسخة تجريبية - متبقي {days_left} يوم"
-        else:
-            return "expired", 0, "انتهت النسخة التجريبية"
+            if len(parts) != 3: return "invalid", 0, "ملف ترخيص غير صالح"
             
-    except Exception as e:
-        Logger.error(f"OPS Security: Error checking license - {e}")
-        return "error", 0, f"خطأ: {str(e)}"
+            saved_date = datetime.datetime.strptime(parts[0], '%Y-%m-%d').date()
+            saved_id = parts[1]
+            status = parts[2]
 
+            if saved_id != machine_id:
+                return "invalid", 0, "الترخيص لا يخص هذا الجهاز"
 
-# ==================== توليد كود التفعيل ====================
-def generate_activation_code():
-    """توليد كود التفعيل بناءً على Machine ID"""
-    machine_id = get_machine_id()
-    code = hashlib.sha256((ACTIVATION_SECRET + machine_id).encode()).hexdigest()[:12].upper()
-    return code
+            if status == "FULL":
+                return "activated", -1, "النسخة كاملة"
 
+            days_passed = (today - saved_date).days
+            remaining = TRIAL_DAYS - days_passed
+            
+            if remaining <= 0:
+                return "expired", 0, "انتهت الفترة التجريبية"
+            return "trial", remaining, f"متبقي {remaining} يوم"
+    except:
+        return "invalid", 0, "خطأ في قراءة الترخيص"
 
-def activate_program(key: str):
-    """تفعيل البرنامج"""
-    expected = generate_activation_code()
-    if key.strip().upper() == expected:
-        save_license("ACTIVATED")
-        return True, "تم تفعيل البرنامج بنجاح!\nالنسخة الآن دائمة."
-    return False, "كود التفعيل غير صحيح!"
-
-
-# ==================== دوال مساعدة ====================
 def run_security():
-    """تشغيل فحص الأمان عند بدء التطبيق"""
-    status, days, message = check_license()
-    
-    Logger.info(f"OPS Security: License status - {status}")
-    
-    if status == "invalid" or status == "error":
-        Logger.error(f"OPS Security: Invalid license - {message}")
-        return False, message
-    elif status == "expired":
-        Logger.warning(f"OPS Security: License expired - {message}")
-        return False, message
-    else:
-        Logger.info(f"OPS Security: License OK - {message}")
-        return True, message
+    # سيتم استدعاء هذه الدالة من main.py
+    res = check_license()
+    if res[0] in ["activated", "trial", "trial_new"]:
+        if res[0] == "trial_new":
+            save_license_file("TRIAL")
+        return True, res[2]
+    return False, res[2]
 
+def save_license_file(status):
+    mid = get_machine_id()
+    date_str = str(get_real_date())
+    data = f"{date_str}|{mid}|{status}"
+    with open(LICENSE_FILE, 'wb') as f:
+        f.write(encrypt_data(data))
 
-def get_license_info():
-    """الحصول على معلومات الترخيص للعرض"""
-    status, days, message = check_license()
-    
-    info = {
-        'status': status,
-        'days_left': days,
-        'message': message,
-        'machine_id': get_machine_id(),
-        'app_version': APP_VERSION,
-        'trial_days': TRIAL_DAYS
-    }
-    
-    return info
-
-
-def secure_db_connection(conn):
-    """تشفير/فك تشفير قاعدة البيانات (اختياري)"""
-    # يمكن إضافة تشفير لقاعدة البيانات هنا
-    pass
+def activate_program(key):
+    # كود التفعيل: OPS + أول 5 حروف من الـ ID + كلمة SECRET
+    mid = get_machine_id()
+    expected = hashlib.sha256((mid + ACTIVATION_SECRET).encode()).hexdigest()[:10].upper()
+    if key.strip().upper() == expected:
+        save_license_file("FULL")
+        return True, "تم التفعيل بنجاح"
+    return False, "كود غير صحيح"

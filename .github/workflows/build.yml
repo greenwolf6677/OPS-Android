@@ -3,6 +3,7 @@ name: Build APK (Kivy)
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch: # يسمح لك بتشغيل البناء يدوياً من صفحة Actions
 
 jobs:
   build:
@@ -12,24 +13,43 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Get Date
+      id: get-date
+      run: |
+        echo "date=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Cache Buildozer
+      uses: actions/cache@v3
+      with:
+        path: .buildozer
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ steps.get-date.outputs.date }}
+
     - name: Install system dependencies
+    # تم إضافة مكتبات أساسية مثل (libsqlite3-dev) لأن مشروعك يعتمد على قاعدة بيانات
       run: |
         sudo apt update
-        sudo apt install -y python3-pip git zip unzip openjdk-17-jdk \
-        autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-        libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+        sudo apt install -y \
+          python3-pip git zip unzip openjdk-17-jdk \
+          autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
+          libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev \
+          build-essential libsqlite3-dev
 
-    - name: Install Buildozer & Cython
+    - name: Install Python dependencies
       run: |
         pip install --upgrade pip
-        pip install buildozer cython
+        pip install --upgrade buildozer cython==0.29.33 virtualenv
 
-    - name: Build APK
+    - name: Build APK with Buildozer
       run: |
-        buildozer -v android debug
+        # هذا الأمر يقوم بقبول التخصيصات وبناء التطبيق في وضع debug
+        yes | buildozer -v android debug
+      env:
+        # هذه البيئة تضمن عدم توقف البناء عند طلب إدخال من المستخدم
+        BUILDOZER_ALLOW_ORG_NAME_START: 1
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: apk
+        name: OPS-Android-App
         path: bin/*.apk
