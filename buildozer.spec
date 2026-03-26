@@ -1,12 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = OPS Android
+title = OPS
 
 # (str) Package name
-package.name = ops_android
-
-# (str) Package domain (needed for android packaging)
+package.name = ops
 package.domain = org.ops
 
 # (str) Version of your application
@@ -15,57 +13,51 @@ version = 1.0.0
 # (str) Source code where the main.py live
 source.dir = .
 
-# (list) Source files to include (let's be safe and include everything)
+# (list) Source files to include
 source.include_exts = py,png,jpg,kv,ttf,db
 
-# (list) List of directory to include (هنا التعديل الجذري بناءً على صورك)
+# (list) List of directory to include
 source.include_dirs = assets, database, kv, screens, security, utils, widgets
 
 # (list) List of exclusions
-source.exclude_dirs = tests, bin, venv, .git, .github
+source.exclude_dirs = tests, bin, venv, .git, .github, __pycache__
 
 # (list) Application requirements
-# أضفت لك fpdf2 للـ PDF و six/sh لضمان التوافق
-requirements = python3, kivy==2.3.0, kivymd==1.2.0, pillow, arabic-reshaper, python-bidi, six, requests, sqlite3, fpdf2
+requirements = python3,kivy,kivymd,pillow,arabic-reshaper,python-bidi,requests,sqlite3,fpdf2
 
-# (str) Custom source folders for requirements
-# (list) Garden requirements
-# (str) Presplash of the application
-# (str) Icon of the application
 # (str) Supported orientations
-orientation = portrait
+orientation = landscape
 
 # (list) Permissions
-android.permissions = INTERNET, CAMERA, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
+android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
 
-# (int) Target Android API, should be as high as possible.
-android.api = 33
+# (int) Target Android API
+android.api = 30
 
-# (int) Minimum API your APK will support.
+# (int) Minimum API
 android.minapi = 21
 
-# (str) Android NDK version to use
+# (str) Android NDK version
 android.ndk = 25b
 
-# (bool) Use --private data storage (True) or --dir public storage (False)
+# (bool) Use private data storage
 android.private_storage = True
 
-# (list) The Android archs to build for (تقليلها لسرعة البناء ومنع الأخطاء)
+# (list) Android archs to build for
 android.archs = arm64-v8a
 
-# (bool) enables Android auto backup
+# (bool) Enable auto backup
 android.allow_backup = True
 
-# (list) List of Java files to add to the android project
-# (list) Gradle dependencies
-# android.gradle_dependencies = 
+# (bool) Accept SDK license (مهم جداً)
+android.accept_sdk_license = True
 
-# (list) add extra settings to the main activity
-# (list) List of service to declare
+# (str) Bootstrap
+bootstrap = sdl2
 
 [buildozer]
-# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
+# (int) Log level
 log_level = 2
 
-# (int) Display warning if buildozer is run as root (0 = off, 1 = on)
+# (int) Display warning if buildozer is run as root
 warn_on_root = 1
