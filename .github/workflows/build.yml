@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -45,7 +46,6 @@ jobs:
 
       - name: Accept Android SDK Licenses
         run: |
-          # مسار الـ SDK الافتراضي في GitHub Runners
           export ANDROID_HOME=/usr/local/lib/android/sdk
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
@@ -56,7 +56,8 @@ jobs:
           ACCEPT_EULA: 'Y'
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: OPS-Android-Debug
+          name: OPS-Android-Debug-APK
           path: bin/*.apk
+          retention-days: 7
