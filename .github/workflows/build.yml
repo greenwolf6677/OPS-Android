@@ -2,38 +2,61 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-22.04
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-      
-      - name: Install dependencies
+
+      - name: Install System Dependencies
         run: |
-          sudo apt update
-          sudo apt install -y python3-pip git zip unzip autoconf libtool
-          pip install buildozer cython pillow
-      
-      - name: Create icon
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            python3-dev \
+            python3-pip \
+            libffi-dev \
+            libssl-dev \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            cmake \
+            ant
+
+      - name: Install Buildozer and Cython
         run: |
-          mkdir -p assets/icon
-          python3 -c "from PIL import Image; Image.new('RGB', (512, 512), color='#2ecc71').save('assets/icon/logo.png')"
-      
-      - name: Build APK
-        run: buildozer android debug
-      
+          pip3 install --user --upgrade buildozer
+          pip3 install --user --upgrade "Cython<3.0"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Accept Android SDK Licenses
+        run: |
+          # مسار الـ SDK الافتراضي في GitHub Runners
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Build with Buildozer
+        run: |
+          buildozer -v android debug
+        env:
+          ACCEPT_EULA: 'Y'
+
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: OPS-APK
+          name: OPS-Android-Debug
           path: bin/*.apk
