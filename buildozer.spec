@@ -9,6 +9,9 @@ package.name = ops_android
 # (str) Package domain (needed for android packaging)
 package.domain = org.ops
 
+# (str) Version of your application
+version = 1.0.0
+
 # (str) Source code where the main.py live
 source.dir = .
 
