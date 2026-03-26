@@ -1,83 +1,133 @@
-def create_return_receipt(customer_name, items, total_amount, reason):
-    """إنشاء وصل مرتجع PDF"""
-    try:
-        if platform == 'android':
-            pdf_dir = os.path.join(BASE_PATH, 'Documents', 'OPS_Returns')
-        else:
-            pdf_dir = os.path.join(BASE_PATH, 'printouts', 'returns')
-        
-        os.makedirs(pdf_dir, exist_ok=True)
-        
-        filename = f"Return_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-        filepath = os.path.join(pdf_dir, filename)
-        
-        pdf = ArabicPDF(orientation='P', unit='mm', format='A6')
-        pdf.add_page()
-        
-        # عنوان الوصل
-        pdf.set_font('Arabic', size=14)
-        pdf.cell(0, 10, 'وصل مرتجع - OPS', ln=True, align='C')
-        
-        pdf.ln(5)
-        pdf.set_font('Arabic', size=10)
-        pdf.cell(0, 8, f"التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M')}", ln=True, align='R')
-        pdf.cell(0, 8, f"الزبون: {customer_name}", ln=True, align='R')
-        
-        pdf.ln(5)
-        pdf.line(10, pdf.get_y(), 150, pdf.get_y())
-        pdf.ln(8)
-        
-        # رؤوس الجدول
-        pdf.set_font('Arabic', size=9)
-        col_widths = [80, 25, 30]
-        pdf.cell(col_widths[0], 8, 'اسم الصنف', border=1, align='C')
-        pdf.cell(col_widths[1], 8, 'الكمية', border=1, align='C')
-        pdf.cell(col_widths[2], 8, 'السعر', border=1, align='C')
-        pdf.ln()
-        
-        # بيانات الجدول
-        for item in items:
-            pdf.cell(col_widths[0], 7, item['name'], border=1, align='R')
-            pdf.cell(col_widths[1], 7, str(item['return_qty']), border=1, align='C')
-            pdf.cell(col_widths[2], 7, f"{item['price']:.2f}", border=1, align='C')
-            pdf.ln()
-        
-        pdf.ln(5)
-        pdf.set_font('Arabic', size=10, style='B')
-        pdf.cell(0, 8, f"الإجمالي المسترد: {total_amount} ₪", ln=True, align='L')
-        
-        if reason:
-            pdf.set_font('Arabic', size=8)
-            pdf.cell(0, 8, f"السبب: {reason}", ln=True, align='R')
-        
-        pdf.ln(5)
-        pdf.set_font('Arabic', size=8)
-        pdf.cell(0, 8, "شكراً لتعاملكم معنا", ln=True, align='C')
-        
-        pdf.output(filepath)
-        
-        # فتح الملف على Android
-        if platform == 'android':
-            from android import mActivity
-            from android.content import Intent
-            from android.net import Uri
-            from jnius import autoclass
+<ReturnItemWidget@BoxLayout>:
+    index: 0
+    p_name: ''
+    p_available: 0.0
+    p_price: 0.0
+    p_return_qty: ''
+    p_subtotal: '0.00'
+    
+    orientation: 'horizontal'
+    padding: dp(2)
+    spacing: dp(5)
+    size_hint_y: None
+    height: dp(55)
+    
+    canvas.before:
+        Color: rgba: 0.1, 0.1, 0.1, 1
+        RoundedRectangle: size: self.size, pos: self.pos, radius: [5]
+
+    Label:
+        text: root.p_name
+        font_name: 'ArabicFont'
+        size_hint_x: 0.35
+        font_size: '13sp'
+    Label:
+        text: str(root.p_available)
+        size_hint_x: 0.15
+        color: 0.7, 0.7, 0.7, 1
+    TextInput:
+        text: root.p_return_qty
+        hint_text: "0"
+        size_hint_x: 0.2
+        input_filter: 'float'
+        multiline: False
+        on_text: app.root.get_screen('returns').update_item_qty(root.index, self.text)
+    Label:
+        text: root.p_subtotal
+        size_hint_x: 0.3
+        bold: True
+        color: 0.2, 0.8, 0.2, 1
+
+<ReturnsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+
+        # العناوين العلوية واختيار الزبون
+        BoxLayout:
+            size_hint_y: 0.15
+            spacing: dp(5)
+            Spinner:
+                id: cust_spinner
+                text: "اختر الزبون"
+                values: root.customers_names
+                font_name: 'ArabicFont'
+                on_text: root.on_customer_select(self.text)
+            Spinner:
+                id: inv_spinner
+                text: "اختر الفاتورة"
+                values: root.invoices_ids
+                font_name: 'ArabicFont'
+                on_text: root.load_invoice_items(self.text)
+
+        # رأس الجدول
+        BoxLayout:
+            size_hint_y: 0.06
+            padding: [dp(5), 0]
+            canvas.before:
+                Color: rgba: 0.2, 0.2, 0.2, 1
+                Rectangle: size: self.size, pos: self.pos
+            Label:
+                text: "الصنف"
+                font_name: 'ArabicFont'
+                size_hint_x: 0.35
+            Label:
+                text: "مباع"
+                font_name: 'ArabicFont'
+                size_hint_x: 0.15
+            Label:
+                text: "إرجاع"
+                font_name: 'ArabicFont'
+                size_hint_x: 0.2
+            Label:
+                text: "المجموع"
+                font_name: 'ArabicFont'
+                size_hint_x: 0.3
+
+        # القائمة (RecycleView)
+        RecycleView:
+            id: returns_rv
+            viewclass: 'ReturnItemWidget'
+            RecycleBoxLayout:
+                default_size: None, dp(55)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(4)
+
+        # التذييل (السبب والمجموع والزر)
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.28
+            spacing: dp(8)
+            padding: dp(5)
+            canvas.before:
+                Color: rgba: 0.15, 0.15, 0.15, 1
+                RoundedRectangle: size: self.size, pos: self.pos, radius: [10]
+
+            TextInput:
+                hint_text: "اكتب سبب المرتجع هنا..."
+                text: root.reason
+                on_text: root.reason = self.text
+                font_name: 'ArabicFont'
+                size_hint_y: 0.4
             
-            File = autoclass('java.io.File')
-            Intent = autoclass('android.content.Intent')
-            Uri = autoclass('android.net.Uri')
-            
-            file = File(filepath)
-            uri = Uri.fromFile(file)
-            intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(uri, 'application/pdf')
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            mActivity.startActivity(intent)
-        else:
-            os.startfile(filepath)
-        
-        return filepath
-        
-    except Exception as e:
-        Logger.error(f"OPS PDF: Error creating return receipt - {e}")
-        return None
+            BoxLayout:
+                size_hint_y: 0.6
+                Label:
+                    text: "إجمالي المرتجع: [color=33ff33]" + root.return_amount + " ₪[/color]"
+                    markup: True
+                    font_name: 'ArabicFont'
+                    font_size: '18sp'
+                Button:
+                    text: "تأكيد المرتجع والطباعة"
+                    background_color: 0.8, 0.2, 0.2, 1
+                    font_name: 'ArabicFont'
+                    on_release: root.process_return()
+
+        Button:
+            text: "رجوع للقائمة"
+            size_hint_y: 0.08
+            on_release: root.manager.current = 'dashboard'

@@ -1,388 +1,279 @@
 <SupplierItem>:
-    orientation: 'horizontal'
-    size_hint_y: None
-    height: dp(50)
-    spacing: dp(5)
-    padding: [dp(5), dp(5)]
+    # تصميم سطر المورد في القائمة اليمنى
+    canvas.before:
+        Color:
+            rgba: (0.2, 0.6, 0.8, 0.3) if root.supplier_id == app.root.get_screen('suppliers').selected_supplier_id else (0.15, 0.17, 0.2, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
     
-    Label:
-        text: str(root.supplier_id)
-        size_hint_x: 0.08
-        font_name: 'ArabicFont'
-    
-    Label:
-        text: root.name
-        size_hint_x: 0.25
-        font_name: 'ArabicFont'
-        halign: 'right'
-        text_size: self.size
-    
-    Label:
-        text: root.mobile
-        size_hint_x: 0.15
-        font_name: 'ArabicFont'
-    
-    Label:
-        text: root.address
-        size_hint_x: 0.2
-        font_name: 'ArabicFont'
-        halign: 'right'
-        text_size: self.size
-    
+    padding: [5, 2]
+    spacing: 5
+
     Label:
         text: root.balance
-        size_hint_x: 0.12
+        size_hint_x: 0.3
+        color: eval(root.balance_color)
         font_name: 'ArabicFont'
-        color: root.balance_color
+        font_size: '12sp'
+        bold: True
     
-    Button:
-        text: "تحديد"
-        size_hint_x: 0.1
-        font_name: 'ArabicFont'
-        background_color: (0.3, 0.5, 0.8, 1)
-        on_press: 
-            app.root.get_screen('suppliers').select_supplier(root.supplier_id)
-
-
-<SuppliersScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: dp(10)
-        spacing: dp(10)
-        
-        # الإطار العلوي
+        size_hint_x: 0.5
+        Label:
+            text: root.name
+            font_name: 'ArabicFont'
+            font_size: '14sp'
+            halign: 'right'
+            text_size: self.size
+        Label:
+            text: root.mobile
+            font_size: '10sp'
+            color: (0.7, 0.7, 0.7, 1)
+            halign: 'right'
+            text_size: self.size
+
+    Button:
+        text: "عرض"
+        size_hint_x: 0.2
+        font_name: 'ArabicFont'
+        font_size: '11sp'
+        background_normal: ''
+        background_color: (0.2, 0.5, 0.7, 1)
+        on_release: app.root.get_screen('suppliers').select_supplier(root.supplier_id)
+
+<MovementItem@BoxLayout>:
+    # تصميم سطر الحركة (فاتورة أو سداد) في كشف الحساب
+    date: ""
+    label: ""
+    amount: ""
+    balance_after: ""
+    
+    canvas.before:
+        Color:
+            rgba: (1, 1, 1, 0.05)
+        Line:
+            points: [self.x, self.y, self.x + self.width, self.y]
+            width: 1
+
+    Label:
+        text: root.balance_after
+        size_hint_x: 0.25
+        font_size: '12sp'
+        color: (1, 1, 1, 0.8)
+    Label:
+        text: root.amount
+        size_hint_x: 0.25
+        font_size: '12sp'
+        bold: True
+        color: (0.8, 0.2, 0.2, 1) if float(root.amount.replace('₪','').strip()) > 0 else (0.2, 0.8, 0.2, 1)
+    Label:
+        text: root.label
+        size_hint_x: 0.3
+        font_name: 'ArabicFont'
+        font_size: '12sp'
+    Label:
+        text: root.date
+        size_hint_x: 0.2
+        font_size: '10sp'
+        color: (0.6, 0.6, 0.6, 1)
+
+<SuppliersScreen>:
+    # ربط المعرفات بملف البايثون
+    suppliers_list: suppliers_list
+    
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: (0.1, 0.12, 0.15, 1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # --- الشريط العلوي ---
         BoxLayout:
-            size_hint_y: None
-            height: dp(60)
-            padding: dp(10)
-            
-            Label:
-                text: "📦 إدارة الموردين والديون"
-                font_size: sp(22)
-                bold: True
-                font_name: 'ArabicFont'
+            size_hint_y: 0.08
+            padding: [10, 5]
+            spacing: 10
+            canvas.before:
+                Color:
+                    rgba: (0.12, 0.14, 0.18, 1)
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             
             Button:
-                text: "↩️ رجوع"
-                size_hint_x: None
-                width: dp(100)
+                text: "↩ عودة"
+                size_hint_x: 0.12
                 font_name: 'ArabicFont'
-                background_color: (0.5, 0.5, 0.5, 1)
-                on_press: root.go_back()
-        
-        # الإطار الرئيسي
+                background_color: (0.7, 0.2, 0.2, 1)
+                on_release: root.go_back()
+            
+            Label:
+                text: "إدارة كشوف حسابات الموردين"
+                font_name: 'ArabicFont'
+                bold: True
+                font_size: '18sp'
+            
+            Button:
+                text: "🔄 تحديث"
+                size_hint_x: 0.12
+                font_name: 'ArabicFont'
+                on_release: root.load_suppliers()
+
+        # --- محتوى الشاشة الرئيسي (Split View) ---
         BoxLayout:
             orientation: 'horizontal'
-            spacing: dp(15)
-            
-            # الجهة اليسرى: الإحصائيات
+            padding: 5
+            spacing: 5
+
+            # --- القسم الأيسر: كشف الحساب التفصيلي ---
             BoxLayout:
                 orientation: 'vertical'
-                size_hint_x: 0.28
-                spacing: dp(10)
-                
-                # إطار إجمالي الديون
+                size_hint_x: 0.6
+                padding: 5
+                canvas.before:
+                    Color:
+                        rgba: (0.15, 0.18, 0.22, 1)
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10]
+
+                Label:
+                    text: f"كشف حركات: {root.selected_supplier_name}" if root.selected_supplier_name else "الرجاء اختيار مورد من القائمة"
+                    size_hint_y: 0.08
+                    font_name: 'ArabicFont'
+                    color: (0.2, 0.6, 0.9, 1)
+                    bold: True
+
+                # هيدر كشف الحساب
                 BoxLayout:
-                    orientation: 'vertical'
                     size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
+                    height: 35
                     canvas.before:
                         Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
+                            rgba: (0.2, 0.25, 0.3, 1)
                         Rectangle:
                             pos: self.pos
                             size: self.size
-                    
-                    Label:
-                        text: "إجمالي الديون"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.total_debt
-                        font_size: sp(28)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.8, 0.2, 0.2, 1)
-                
-                # إطار عدد الموردين
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
-                    canvas.before:
-                        Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    
-                    Label:
-                        text: "عدد الموردين"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.total_suppliers
-                        font_size: sp(28)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.2, 0.5, 0.8, 1)
-                
-                # إطار متوسط الدين
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
-                    canvas.before:
-                        Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    
-                    Label:
-                        text: "متوسط الدين"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.avg_debt
-                        font_size: sp(28)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.2, 0.6, 0.2, 1)
-            
-            # الجهة اليمنى: المحتوى الرئيسي
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint_x: 0.72
-                spacing: dp(10)
-                
-                # إطار الأزرار
-                GridLayout:
-                    size_hint_y: None
-                    height: dp(120)
-                    cols: 4
-                    spacing: dp(5)
-                    padding: dp(10)
-                    
-                    Button:
-                        text: "➕ إضافة مورد"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.6, 0.2, 1)
-                        on_press: root.add_supplier()
-                    
-                    Button:
-                        text: "✏️ تعديل"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.5, 0.8, 1)
-                        on_press: root.edit_supplier()
-                    
-                    Button:
-                        text: "🗑️ حذف"
-                        font_name: 'ArabicFont'
-                        background_color: (0.8, 0.2, 0.2, 1)
-                        on_press: root.delete_supplier()
-                    
-                    Button:
-                        text: "🧹 مسح"
-                        font_name: 'ArabicFont'
-                        background_color: (0.5, 0.5, 0.5, 1)
-                        on_press: root.clear_fields()
-                    
-                    Button:
-                        text: "📋 فواتير المورد"
-                        font_name: 'ArabicFont'
-                        background_color: (0.6, 0.3, 0.8, 1)
-                        on_press: root.show_supplier_invoices()
-                    
-                    Button:
-                        text: "💰 مدفوعات المورد"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.7, 0.5, 1)
-                        on_press: root.show_supplier_payments()
-                    
-                    Button:
-                        text: "📊 كشف حساب"
-                        font_name: 'ArabicFont'
-                        background_color: (0.5, 0.4, 0.2, 1)
-                        on_press: root.show_supplier_account()
-                    
-                    Button:
-                        text: "🖨️ طباعة كشف الحساب"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.5, 0.7, 1)
-                        on_press: root.print_supplier_account()
-                
-                # إطار حقول الإدخال
-                ScrollView:
-                    BoxLayout:
-                        orientation: 'vertical'
+                    Label: text: "الرصيد التراكمي"; font_name: 'ArabicFont'; size_hint_x: 0.25; font_size: '11sp'
+                    Label: text: "المبلغ"; font_name: 'ArabicFont'; size_hint_x: 0.25; font_size: '11sp'
+                    Label: text: "نوع الحركة"; font_name: 'ArabicFont'; size_hint_x: 0.3; font_size: '11sp'
+                    Label: text: "التاريخ"; font_name: 'ArabicFont'; size_hint_x: 0.2; font_size: '11sp'
+
+                RecycleView:
+                    id: movements_list
+                    viewclass: 'MovementItem'
+                    RecycleBoxLayout:
+                        default_size: None, dp(40)
+                        default_size_hint: 1, None
                         size_hint_y: None
                         height: self.minimum_height
-                        spacing: dp(8)
-                        padding: dp(10)
-                        
-                        Label:
-                            text: "بيانات المورد"
-                            font_size: sp(16)
-                            bold: True
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(30)
-                        
-                        Label:
-                            text: "اسم المورد:"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(25)
-                        TextInput:
-                            text: root.name
-                            hint_text: "أدخل اسم المورد"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            multiline: False
-                            size_hint_y: None
-                            height: dp(45)
-                            on_text: root.name = self.text
-                        
-                        Label:
-                            text: "رقم الجوال:"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(25)
-                        TextInput:
-                            text: root.mobile
-                            hint_text: "أدخل رقم الجوال"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            multiline: False
-                            size_hint_y: None
-                            height: dp(45)
-                            on_text: root.mobile = self.text
-                        
-                        Label:
-                            text: "العنوان:"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(25)
-                        TextInput:
-                            text: root.address
-                            hint_text: "أدخل العنوان"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            multiline: False
-                            size_hint_y: None
-                            height: dp(45)
-                            on_text: root.address = self.text
-                        
-                        Label:
-                            text: "ملاحظات:"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(25)
-                        TextInput:
-                            text: root.notes
-                            hint_text: "ملاحظات"
-                            font_size: sp(12)
-                            font_name: 'ArabicFont'
-                            multiline: True
-                            size_hint_y: None
-                            height: dp(60)
-                            on_text: root.notes = self.text
-                        
-                        # قسم السداد
-                        Label:
-                            text: "تسجيل سداد نقدي"
-                            font_size: sp(16)
-                            bold: True
-                            font_name: 'ArabicFont'
-                            size_hint_y: None
-                            height: dp(30)
-                        
-                        BoxLayout:
-                            size_hint_y: None
-                            height: dp(50)
-                            spacing: dp(10)
-                            
-                            Button:
-                                text: "✅ تسجيل سداد"
-                                font_name: 'ArabicFont'
-                                background_color: (0.2, 0.6, 0.8, 1)
-                                on_press: root.add_payment()
-                            
-                            Label:
-                                text: "المبلغ المراد سداده:"
-                                font_size: sp(12)
-                                font_name: 'ArabicFont'
-                            
-                            TextInput:
-                                text: root.payment_amount
-                                hint_text: "0.00"
-                                font_size: sp(12)
-                                font_name: 'ArabicFont'
-                                multiline: False
-                                input_filter: 'float'
-                                size_hint_x: 0.3
-                                on_text: root.payment_amount = self.text
-                
-                # رأس الجدول
+                        orientation: 'vertical'
+
+                # أزرار الطباعة والتقارير
                 BoxLayout:
-                    size_hint_y: None
-                    height: dp(45)
-                    spacing: dp(5)
-                    padding: dp(5)
+                    size_hint_y: 0.1
+                    padding: [0, 5, 0, 0]
+                    spacing: 10
+                    Button:
+                        text: "🖨️ طباعة كشف PDF"
+                        font_name: 'ArabicFont'
+                        background_color: (0.4, 0.4, 0.4, 1)
+                        on_release: root.print_supplier_account()
+                    Button:
+                        text: "📥 تصدير Excel"
+                        font_name: 'ArabicFont'
+                        background_color: (0.2, 0.5, 0.3, 1)
+
+            # --- القسم الأيمن: إدارة الموردين والبحث ---
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.4
+                spacing: 5
+
+                # إحصائيات سريعة
+                BoxLayout:
+                    size_hint_y: 0.15
+                    orientation: 'vertical'
                     canvas.before:
                         Color:
-                            rgba: (0.2, 0.3, 0.4, 1)
-                        Rectangle:
+                            rgba: (0.8, 0.2, 0.2, 0.1)
+                        RoundedRectangle:
                             pos: self.pos
                             size: self.size
-                    
+                            radius: [10]
                     Label:
-                        text: "ID"
-                        size_hint_x: 0.08
+                        text: "إجمالي الديون المطلوبة للموردين"
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        font_size: '12sp'
                     Label:
-                        text: "اسم المورد"
-                        size_hint_x: 0.25
+                        text: root.total_debt
+                        font_size: '22sp'
+                        bold: True
+                        color: (1, 0.4, 0.4, 1)
+
+                # مدخلات البيانات
+                GridLayout:
+                    cols: 1
+                    size_hint_y: 0.35
+                    spacing: 5
+                    TextInput:
+                        hint_text: "اسم المورد"
+                        text: root.name
+                        on_text: root.name = self.text
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
-                    Label:
-                        text: "رقم الجوال"
-                        size_hint_x: 0.15
+                        halign: 'right'
+                        multiline: False
+                    TextInput:
+                        hint_text: "رقم الجوال"
+                        text: root.mobile
+                        on_text: root.mobile = self.text
+                        halign: 'right'
+                    TextInput:
+                        hint_text: "مبلغ السداد (₪)"
+                        text: root.payment_amount
+                        on_text: root.payment_amount = self.text
+                        input_filter: 'float'
+                        background_color: (0.2, 0.3, 0.2, 1)
+                        foreground_color: (1, 1, 1, 1)
+
+                # أزرار الإجراءات
+                GridLayout:
+                    cols: 2
+                    size_hint_y: 0.15
+                    spacing: 5
+                    Button:
+                        text: "إضافة مورد"
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
-                    Label:
-                        text: "العنوان"
-                        size_hint_x: 0.2
+                        background_color: (0.2, 0.6, 0.2, 1)
+                        on_release: root.add_supplier()
+                    Button:
+                        text: "تسجيل سداد"
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
-                    Label:
-                        text: "صافي الدين"
-                        size_hint_x: 0.12
+                        background_color: (0.2, 0.7, 0.3, 1)
+                        on_release: root.add_payment()
+                    Button:
+                        text: "تعديل"
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
-                    Label:
-                        text: ""
-                        size_hint_x: 0.1
+                        on_release: root.edit_supplier()
+                    Button:
+                        text: "حذف"
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
-                
+                        background_color: (0.8, 0.2, 0.2, 1)
+                        on_release: root.delete_supplier()
+
                 # قائمة الموردين
                 RecycleView:
                     id: suppliers_list
                     viewclass: 'SupplierItem'
-                    
                     RecycleBoxLayout:
-                        default_size: (None, dp(50))
-                        default_size_hint: (1, None)
+                        default_size: None, dp(55)
+                        default_size_hint: 1, None
                         size_hint_y: None
                         height: self.minimum_height
                         orientation: 'vertical'
+                        spacing: 2

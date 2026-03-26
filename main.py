@@ -1,9 +1,12 @@
 """
 OPS (Orders Processing System) - Android Version
 نظام معالجة الطلبات - إصدار أندرويد 2026
+المعدل ليحتوي على نظام اقتناص الأخطاء (Error Catcher)
 """
 
 import os
+import traceback
+import sys
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
 from kivy.core.window import Window
@@ -12,6 +15,9 @@ from kivy.lang import Builder
 from kivy.utils import platform
 from kivy.core.text import LabelBase
 from kivy.logger import Logger
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from kivy.uix.scrollview import ScrollView
 
 # مكتبات معالجة اللغة العربية
 try:
@@ -27,10 +33,11 @@ APP_VERSION = "1.0.0"
 # --- تعديل الأذونات لأندرويد الحديث ---
 if platform == 'android':
     from android.permissions import request_permissions, Permission
-    # طلب الأذونات الأساسية فقط (أندرويد 11+ يعامل الملفات الداخلية بحرية دون الحاجة لـ WRITE_EXTERNAL)
     request_permissions([
         Permission.INTERNET,
-        Permission.CAMERA # إذا كنت ستستخدم الباركود لاحقاً
+        Permission.CAMERA,
+        Permission.READ_EXTERNAL_STORAGE,
+        Permission.WRITE_EXTERNAL_STORAGE
     ])
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -40,7 +47,7 @@ resource_add_path(BASE_PATH)
 resource_add_path(os.path.join(BASE_PATH, 'kv'))
 resource_add_path(os.path.join(BASE_PATH, 'assets'))
 
-# تسجيل الخط العربي (تأكد من وجود الملف في هذا المسار تماماً)
+# تسجيل الخط العربي
 FONT_PATH = os.path.join(BASE_PATH, 'assets', 'fonts', 'arial.ttf')
 if os.path.exists(FONT_PATH):
     try:
@@ -52,7 +59,6 @@ if os.path.exists(FONT_PATH):
 # تحميل ملفات KV تلقائياً
 KV_PATH = os.path.join(BASE_PATH, 'kv')
 if os.path.exists(KV_PATH):
-    # ترتيب التحميل (تحميل الملفات الأساسية أولاً إذا لزم الأمر)
     for kv_file in sorted(os.listdir(KV_PATH)):
         if kv_file.endswith('.kv'):
             try:
@@ -60,7 +66,7 @@ if os.path.exists(KV_PATH):
             except Exception as e:
                 Logger.error(f"OPS: Error loading {kv_file}: {e}")
 
-# استيراد المكونات (تأكد أن كل مجلد يحتوي على __init__.py)
+# استيراد المكونات
 from database import init_db
 from security.android_security import run_security
 from screens.login_screen import LoginScreen
@@ -84,7 +90,7 @@ from screens.debt_report_screen import DebtReportScreen
 from screens.sales_by_user_report_screen import SalesByUserReportScreen
 from screens.payment_method_report_screen import PaymentMethodReportScreen
 from screens.purchases_report_screen import PurchasesReportScreen
-from screens.inventory_report_screen import InventoryReportScreen
+from screens.inventory_report_screen import Inventory_report_screen
 from screens.customer_invoices_screen import CustomerInvoicesScreen
 from screens.customer_payments_screen import CustomerPaymentsScreen
 from screens.customer_account_screen import CustomerAccountScreen
@@ -94,11 +100,10 @@ from screens.supplier_account_screen import SupplierAccountScreen
 
 class OPSApp(App):
     def build(self):
-        # تشغيل فحص الأمان والترخيص عند البداية
         try:
             is_valid, _ = run_security()
         except:
-            is_valid = False # في حال فشل ملف الأمان
+            is_valid = False 
 
         if platform == 'android':
             Window.fullscreen = 'auto'
@@ -107,7 +112,6 @@ class OPSApp(App):
 
         self.screen_manager = ScreenManager()
         
-        # قائمة الشاشات
         screens_list = [
             (LicenseScreen, 'license'),
             (LoginScreen, 'login'),
@@ -129,7 +133,7 @@ class OPSApp(App):
             (SalesByUserReportScreen, 'sales_by_user_report'),
             (PaymentMethodReportScreen, 'payment_method_report'),
             (PurchasesReportScreen, 'purchases_report'),
-            (InventoryReportScreen, 'inventory_report'),
+            (Inventory_report_screen, 'inventory_report'),
             (CustomerInvoicesScreen, 'customer_invoices'),
             (CustomerPaymentsScreen, 'customer_payments'),
             (CustomerAccountScreen, 'customer_account'),
@@ -138,21 +142,49 @@ class OPSApp(App):
             (SupplierAccountScreen, 'supplier_account')
         ]
 
-        # إضافة الشاشات للـ Manager
         for screen_class, s_name in screens_list:
             self.screen_manager.add_widget(screen_class(name=s_name))
 
-        # تحديد الشاشة الأولى بناءً على الترخيص
         self.screen_manager.current = 'login' if is_valid else 'license'
         return self.screen_manager
 
     def on_start(self):
-        # تهيئة قاعدة البيانات فور تشغيل التطبيق
         try:
             init_db()
             Logger.info("OPS: Database initialized on start.")
         except Exception as e:
             Logger.error(f"OPS: Database initialization failed: {e}")
 
+def show_critical_error(error_text):
+    """دالة طوارئ لعرض الخطأ التقني على شاشة الهاتف مباشرة"""
+    Logger.error(f"OPS_FATAL: {error_text}")
+    
+    # محاولة بناء واجهة بسيطة جداً لعرض الخطأ
+    root = ScrollView(size_hint=(1, 1))
+    content = Label(
+        text=f"CRITICAL ERROR:\n\n{error_text}",
+        size_hint_y=None,
+        color=(1, 0, 0, 1),
+        font_size='14sp',
+        halign='left',
+        valign='top',
+        padding=(20, 20)
+    )
+    content.bind(texture_size=content.setter('size'))
+    root.add_widget(content)
+    
+    # تشغيل تطبيق طوارئ لعرض الخطأ فقط
+    class ErrorApp(App):
+        def build(self):
+            return root
+    
+    ErrorApp().run()
+
 if __name__ == '__main__':
-    OPSApp().run()
+    try:
+        OPSApp().run()
+    except Exception:
+        # التقاط الخطأ الكامل وتحويله لنص
+        error_info = traceback.format_exc()
+        # إظهار نافذة الخطأ بدلاً من الخروج الصامت
+        show_critical_error(error_info)

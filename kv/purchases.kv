@@ -4,12 +4,19 @@
     height: dp(50)
     spacing: dp(5)
     padding: [dp(5), dp(5)]
+    canvas.before:
+        Color:
+            rgba: (0.98, 0.98, 0.98, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
     
     Label:
         text: root.barcode
         size_hint_x: 0.15
         font_name: 'ArabicFont'
         font_size: sp(12)
+        color: (0.2, 0.2, 0.2, 1)
     
     Label:
         text: root.name
@@ -18,18 +25,21 @@
         font_size: sp(12)
         halign: 'right'
         text_size: self.size
+        color: (0.1, 0.1, 0.1, 1)
     
     Label:
         text: f"{root.buy_price:.2f}"
         size_hint_x: 0.12
         font_name: 'ArabicFont'
         font_size: sp(12)
+        color: (0.2, 0.2, 0.2, 1)
     
     Label:
         text: str(root.qty)
         size_hint_x: 0.1
         font_name: 'ArabicFont'
         font_size: sp(12)
+        color: (0.2, 0.2, 0.2, 1)
     
     Label:
         text: f"{root.subtotal:.2f}"
@@ -37,247 +47,225 @@
         font_name: 'ArabicFont'
         font_size: sp(12)
         color: (0.2, 0.6, 0.2, 1)
+        bold: True
     
     Button:
         text: "🗑️"
         size_hint_x: 0.08
-        font_name: 'ArabicFont'
         font_size: sp(14)
+        background_normal: ''
         background_color: (0.8, 0.2, 0.2, 1)
-        on_press: 
-            app.root.get_screen('purchases').remove_item(root.item_id)
+        on_press: app.root.get_screen('purchases').remove_item(root.item_id)
 
 
 <PurchasesScreen>:
+    # ربط الخصائص البرمجية
+    cart_list: cart_list
+
     BoxLayout:
         orientation: 'vertical'
         padding: dp(10)
         spacing: dp(10)
+        canvas.before:
+            Color:
+                rgba: (0.92, 0.93, 0.95, 1)
+            Rectangle:
+                pos: self.pos
+                size: self.size
         
-        # الإطار العلوي
+        # الإطار العلوي (العنوان والرجوع)
         BoxLayout:
             size_hint_y: None
             height: dp(60)
-            padding: dp(10)
+            padding: [dp(10), 0]
             spacing: dp(10)
-            
-            Label:
-                text: "فاتورة شراء"
-                font_size: sp(24)
-                bold: True
-                font_name: 'ArabicFont'
             
             Button:
                 text: "↩️ رجوع"
                 size_hint_x: None
-                width: dp(100)
+                width: dp(120)
                 font_name: 'ArabicFont'
-                background_color: (0.5, 0.5, 0.5, 1)
+                background_normal: ''
+                background_color: (0.4, 0.4, 0.4, 1)
                 on_press: root.go_back()
+
+            Label:
+                text: "نظام إدارة المشتريات"
+                font_size: sp(22)
+                bold: True
+                font_name: 'ArabicFont'
+                color: (0.1, 0.2, 0.3, 1)
+                halign: 'right'
         
-        # الإطار الرئيسي
+        # الإطار الرئيسي (تقسيم يسار ويمين)
         BoxLayout:
             orientation: 'horizontal'
             spacing: dp(15)
             
-            # الجهة اليسرى: الإحصائيات
+            # --- الجهة اليسرى: لوحة التحكم المالية ---
             BoxLayout:
                 orientation: 'vertical'
-                size_hint_x: 0.28
+                size_hint_x: 0.3
                 spacing: dp(10)
                 
-                # إطار إجمالي الفاتورة
+                # إجمالي الفاتورة
                 BoxLayout:
                     orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
-                    canvas.before:
-                        Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    
-                    Label:
-                        text: "إجمالي الفاتورة"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.total_amount
-                        font_size: sp(28)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.2, 0.5, 0.8, 1)
-                
-                # إطار الخصم
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
-                    canvas.before:
-                        Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    
-                    Label:
-                        text: "الخصم"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.discount_amount
-                        font_size: sp(24)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.8, 0.2, 0.2, 1)
-                
-                # إطار الصافي
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(100)
-                    padding: dp(10)
-                    canvas.before:
-                        Color:
-                            rgba: (0.95, 0.95, 0.95, 1)
-                        Rectangle:
-                            pos: self.pos
-                            size: self.size
-                    
-                    Label:
-                        text: "الصافي"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                    Label:
-                        text: root.net_amount
-                        font_size: sp(28)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        color: (0.2, 0.6, 0.2, 1)
-                
-                # أزرار التحكم
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint_y: None
-                    height: dp(120)
-                    spacing: dp(5)
-                    
-                    Button:
-                        text: "✅ إنهاء الشراء"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.6, 0.2, 1)
-                        size_hint_y: None
-                        height: dp(50)
-                        on_press: root.finish_purchase()
-                    
-                    Button:
-                        text: "🗑️ مسح السلة"
-                        font_name: 'ArabicFont'
-                        background_color: (0.8, 0.2, 0.2, 1)
-                        size_hint_y: None
-                        height: dp(50)
-                        on_press: root.clear_cart()
-            
-            # الجهة اليمنى: المحتوى الرئيسي
-            BoxLayout:
-                orientation: 'vertical'
-                size_hint_x: 0.72
-                spacing: dp(10)
-                
-                # إطار اختيار المورد
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(60)
-                    padding: dp(10)
-                    spacing: dp(10)
-                    
-                    Label:
-                        text: "اختر المورد:"
-                        font_size: sp(14)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        size_hint_x: None
-                        width: dp(100)
-                    
-                    Spinner:
-                        text: root.supplier_name
-                        values: root.suppliers_list
-                        font_name: 'ArabicFont'
-                        font_size: sp(14)
-                        size_hint_x: 0.5
-                        on_text: root.supplier_name = self.text
-                
-                # إطار الإدخال
-                BoxLayout:
                     size_hint_y: None
                     height: dp(80)
                     padding: dp(10)
-                    spacing: dp(10)
-                    
-                    TextInput:
-                        text: root.barcode
-                        hint_text: "الباركود"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                        multiline: False
-                        size_hint_x: 0.4
-                        on_text: root.barcode = self.text
-                    
-                    TextInput:
-                        text: root.quantity
-                        hint_text: "الكمية"
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                        multiline: False
-                        input_filter: 'int'
-                        size_hint_x: 0.15
-                        on_text: root.quantity = self.text
-                    
-                    Button:
-                        text: "➕ إضافة الصنف"
-                        font_name: 'ArabicFont'
-                        background_color: (0.2, 0.5, 0.8, 1)
-                        size_hint_x: 0.25
-                        on_press: root.add_to_cart()
-                
-                # إطار الخصم
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(60)
-                    padding: dp(10)
-                    spacing: dp(10)
-                    
-                    Label:
-                        text: "قيمة الخصم:"
-                        font_size: sp(14)
-                        bold: True
-                        font_name: 'ArabicFont'
-                        size_hint_x: None
-                        width: dp(100)
-                    
-                    TextInput:
-                        text: root.discount_amount
-                        font_size: sp(14)
-                        font_name: 'ArabicFont'
-                        multiline: False
-                        input_filter: 'float'
-                        size_hint_x: 0.2
-                        on_text: 
-                            root.discount_amount = self.text
-                            root.update_totals()
-                
-                # رأس جدول السلة
-                BoxLayout:
-                    size_hint_y: None
-                    height: dp(45)
-                    spacing: dp(5)
-                    padding: dp(5)
                     canvas.before:
                         Color:
-                            rgba: (0.2, 0.3, 0.4, 1)
+                            rgba: (1, 1, 1, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [10,]
+                    Label:
+                        text: "الإجمالي"
+                        font_size: sp(14)
+                        color: (0.5, 0.5, 0.5, 1)
+                        font_name: 'ArabicFont'
+                    Label:
+                        text: root.total_amount
+                        font_size: sp(24)
+                        bold: True
+                        color: (0.2, 0.4, 0.6, 1)
+
+                # الصافي (باللون الأخضر المميز)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(100)
+                    padding: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: (0.2, 0.6, 0.2, 1)
+                        RoundedRectangle:
+                            pos: self.pos
+                            size: self.size
+                            radius: [10,]
+                    Label:
+                        text: "الصافي المستحق"
+                        font_size: sp(16)
+                        color: (1, 1, 1, 0.9)
+                        font_name: 'ArabicFont'
+                    Label:
+                        text: root.net_amount
+                        font_size: sp(32)
+                        bold: True
+                        color: (1, 1, 1, 1)
+
+                Widget: # مساحة فارغة للضبط
+
+                # أزرار الإجراءات النهائية
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(180)
+                    spacing: dp(8)
+                    
+                    Button:
+                        text: "🖨️ طباعة آخر فاتورة"
+                        font_name: 'ArabicFont'
+                        background_normal: ''
+                        background_color: (0.2, 0.5, 0.5, 1)
+                        on_press: root.print_last_invoice()
+
+                    Button:
+                        text: "🗑️ مسح السلة"
+                        font_name: 'ArabicFont'
+                        background_normal: ''
+                        background_color: (0.7, 0.3, 0.3, 1)
+                        on_press: root.clear_cart()
+
+                    Button:
+                        text: "✅ إنهاء الشراء"
+                        font_name: 'ArabicFont'
+                        font_size: sp(18)
+                        bold: True
+                        background_normal: ''
+                        background_color: (0.1, 0.5, 0.1, 1)
+                        on_press: root.finish_purchase()
+
+            # --- الجهة اليمنى: إدخال البيانات وجدول المواد ---
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.7
+                spacing: dp(10)
+                
+                # صف اختيار المورد والخصم
+                GridLayout:
+                    cols: 2
+                    size_hint_y: None
+                    height: dp(100)
+                    spacing: dp(10)
+                    
+                    BoxLayout:
+                        spacing: dp(5)
+                        Label:
+                            text: "المورد:"
+                            font_name: 'ArabicFont'
+                            size_hint_x: 0.3
+                        Spinner:
+                            text: root.supplier_name
+                            values: root.suppliers_list
+                            font_name: 'ArabicFont'
+                            on_text: root.supplier_name = self.text
+
+                    BoxLayout:
+                        spacing: dp(5)
+                        Label:
+                            text: "خصم فاتورة:"
+                            font_name: 'ArabicFont'
+                            size_hint_x: 0.4
+                        TextInput:
+                            text: root.discount_amount
+                            multiline: False
+                            input_filter: 'float'
+                            on_text: 
+                                root.discount_amount = self.text
+                                root.update_totals()
+
+                # صف إدخال الباركود والكمية
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(50)
+                    spacing: dp(10)
+                    
+                    TextInput:
+                        id: barcode_input
+                        text: root.barcode
+                        hint_text: "أدخل الباركود أو امسح بالكود..."
+                        multiline: False
+                        font_size: sp(16)
+                        padding: [dp(10), dp(10)]
+                        on_text: root.barcode = self.text
+                        on_text_validate: root.add_to_cart()
+
+                    TextInput:
+                        text: root.quantity
+                        hint_text: "كمية"
+                        size_hint_x: 0.2
+                        input_filter: 'int'
+                        multiline: False
+                        on_text: root.quantity = self.text
+
+                    Button:
+                        text: "➕ إضافة"
+                        size_hint_x: 0.25
+                        font_name: 'ArabicFont'
+                        background_normal: ''
+                        background_color: (0.2, 0.4, 0.8, 1)
+                        on_press: root.add_to_cart()
+
+                # جدول السلة (رأس الجدول)
+                BoxLayout:
+                    size_hint_y: None
+                    height: dp(40)
+                    canvas.before:
+                        Color:
+                            rgba: (0.15, 0.25, 0.35, 1)
                         Rectangle:
                             pos: self.pos
                             size: self.size
@@ -286,40 +274,47 @@
                         text: "الباركود"
                         size_hint_x: 0.15
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        bold: True
                     Label:
-                        text: "اسم الصنف"
+                        text: "الصنف"
                         size_hint_x: 0.3
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        bold: True
                     Label:
-                        text: "سعر الشراء"
+                        text: "السعر"
                         size_hint_x: 0.12
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        bold: True
                     Label:
                         text: "الكمية"
                         size_hint_x: 0.1
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        bold: True
                     Label:
-                        text: "الإجمالي"
+                        text: "المجموع"
                         size_hint_x: 0.12
                         font_name: 'ArabicFont'
-                        color: (1, 1, 1, 1)
+                        bold: True
                     Label:
-                        text: ""
+                        text: "حذف"
                         size_hint_x: 0.08
                         font_name: 'ArabicFont'
-                
-                # قائمة السلة
+                        bold: True
+
+                # قائمة الأصناف المضافة
                 RecycleView:
                     id: cart_list
                     viewclass: 'PurchaseItem'
-                    
+                    canvas.before:
+                        Color:
+                            rgba: (1, 1, 1, 1)
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
                     RecycleBoxLayout:
                         default_size: (None, dp(50))
                         default_size_hint: (1, None)
                         size_hint_y: None
                         height: self.minimum_height
                         orientation: 'vertical'
+                        spacing: dp(1)
