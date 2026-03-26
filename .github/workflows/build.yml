@@ -1,55 +1,29 @@
-name: Build APK (Kivy)
-
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch: # يسمح لك بتشغيل البناء يدوياً من صفحة Actions
-
+name: OPS Final Success Build
+on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
+    runs-on: ubuntu-22.04  # نستخدم نسخة أقدم وأكثر استقراراً
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Get Date
-      id: get-date
-      run: |
-        echo "date=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Cache Buildozer
-      uses: actions/cache@v3
-      with:
-        path: .buildozer
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}-${{ steps.get-date.outputs.date }}
-
-    - name: Install system dependencies
-    # تم إضافة مكتبات أساسية مثل (libsqlite3-dev) لأن مشروعك يعتمد على قاعدة بيانات
-      run: |
-        sudo apt update
-        sudo apt install -y \
-          python3-pip git zip unzip openjdk-17-jdk \
-          autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-          libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev \
-          build-essential libsqlite3-dev
-
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install --upgrade buildozer cython==0.29.33 virtualenv
-
-    - name: Build APK with Buildozer
-      run: |
-        # هذا الأمر يقوم بقبول التخصيصات وبناء التطبيق في وضع debug
-        yes | buildozer -v android debug
-      env:
-        # هذه البيئة تضمن عدم توقف البناء عند طلب إدخال من المستخدم
-        BUILDOZER_ALLOW_ORG_NAME_START: 1
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: OPS-Android-App
-        path: bin/*.apk
+      - uses: actions/checkout@v4
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo apt-get clean
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade buildozer cython==0.29.33
+          sudo apt-get install -y libsqlite3-dev
+      - name: Build with Buildozer
+        run: |
+          # الموافقة على التراخيص مسبقاً
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          buildozer android debug || true
+          # المحاولة الثانية بعد تثبيت الأدوات
+          buildozer android debug
