@@ -19,7 +19,12 @@ import sqlite3
 from datetime import datetime
 from database import get_db_connection
 
-
+class DebtReportScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.customer_debt_list = []   # أضف هذا
+        self.supplier_debt_list = []   # أضف هذا
+        
 class DebtItem(BoxLayout):
     """عنصر مدين في قائمة الديون"""
     debt_id = NumericProperty(0)

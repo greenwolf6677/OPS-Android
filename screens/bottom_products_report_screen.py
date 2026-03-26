@@ -20,7 +20,11 @@ import sqlite3
 from datetime import datetime, date, timedelta
 from database import get_db_connection
 
-
+class BottomProductsReportScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.products_list = []  # أضف هذا
+        
 class BottomProductItem(BoxLayout):
     """عنصر منتج في قائمة الأقل مبيعاً"""
     rank = NumericProperty(0)

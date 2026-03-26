@@ -19,7 +19,11 @@ import sqlite3
 from datetime import datetime, date, timedelta
 from database import get_db_connection
 
-
+class ProfitReportScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.products_list = []  # أضف هذا
+        
 class ProfitItem(BoxLayout):
     """عنصر منتج في قائمة الأرباح"""
     rank = NumericProperty(0)

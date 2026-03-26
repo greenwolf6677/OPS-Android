@@ -30,7 +30,11 @@ except ImportError:
     PDF_AVAILABLE = False
     Logger.warning("OPS Reports: PDF generator not available")
 
-
+class TopProductsReportScreen(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.products_list = []  # أضف هذا
+        
 class TopProductItem(BoxLayout):
     """عنصر منتج في قائمة الأكثر مبيعاً"""
     rank = NumericProperty(0)
