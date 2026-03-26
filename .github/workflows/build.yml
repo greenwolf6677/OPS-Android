@@ -1,32 +1,38 @@
-name: OPS Final Success Build
+name: OPS Absolute Final Build
 on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Free Disk Space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo apt-get clean
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Install Dependencies
+
+      - name: Install System Dependencies
         run: |
-          pip install --upgrade pip
-          pip install --upgrade buildozer cython==0.29.33
-          sudo apt-get install -y libsqlite3-dev
-      - name: Build with Buildozer
+          sudo apt-get update
+          sudo apt-get install -y build-essential libffi-dev libssl-dev python3-setuptools
+          pip install --upgrade pip buildozer cython==0.29.33
+
+      - name: Android SDK/NDK Pre-warm
         run: |
-          # مسح المجلدات القديمة لضمان بناء نظيف
-          rm -rf .buildozer
-          # الموافقة على التراخيص وتشغيل البناء
-          yes | buildozer android debug
+          # هذه الخطوة لتجهيز الأدوات فقط دون بناء التطبيق
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          yes | buildozer android p4a -- get-ndk || true
+          yes | buildozer android p4a -- get-sdk || true
+
+      - name: Build APK (Silent Mode)
+        run: |
+          # تشغيل البناء مباشرة مع تعطيل التفاعل لمنع Broken Pipe
+          buildozer -v android debug
+        env:
+          BUILDOZER_ALLOW_ORG_NAME_START: 1
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: OPS-APK
+          name: OPS-App-Package
           path: bin/*.apk
