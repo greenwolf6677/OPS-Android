@@ -2,7 +2,7 @@ name: OPS Final Success Build
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-22.04  # نستخدم نسخة أقدم وأكثر استقراراً
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Free Disk Space
@@ -21,9 +21,12 @@ jobs:
           sudo apt-get install -y libsqlite3-dev
       - name: Build with Buildozer
         run: |
-          # الموافقة على التراخيص مسبقاً
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          buildozer android debug || true
-          # المحاولة الثانية بعد تثبيت الأدوات
-          buildozer android debug
+          # مسح المجلدات القديمة لضمان بناء نظيف
+          rm -rf .buildozer
+          # الموافقة على التراخيص وتشغيل البناء
+          yes | buildozer android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: OPS-APK
+          path: bin/*.apk
